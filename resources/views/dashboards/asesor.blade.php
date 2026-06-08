@@ -2,24 +2,30 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Mi Dashboard</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Bienvenido, <strong>{{ $user->name }}</strong>
-                    · Team Líder: {{ $teamLeader ? $teamLeader->name : 'Sin asignar' }}
+                <h2 class="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                    <span class="bg-indigo-500/10 text-indigo-500 p-2 rounded-xl text-xl">📊</span>
+                    Mi Dashboard Asesor
+                </h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Bienvenido, <strong class="text-gray-700 dark:text-gray-200">{{ $user->name }}</strong> 
+                    · Team Líder: <span class="font-semibold text-gray-700 dark:text-gray-200">{{ $teamLeader ? $teamLeader->name : 'Sin asignar' }}</span> 
                     · {{ $today->format('d/m/Y') }}
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('asesor.visits-map') }}" class="px-4 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-md shadow-emerald-600/20">
-                    🗺️ Mis Visitas en Mapa
+            <div class="flex items-center gap-3 flex-wrap">
+                <a href="{{ route('asesor.visits-map') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    Mis Visitas en Mapa
                 </a>
                 @if(!$todayReport)
-                    <a href="{{ route('asesor.report.create') }}" class="px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-md shadow-blue-600/20">
-                        📤 Enviar Reporte de Hoy
+                    <a href="{{ route('asesor.report.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Enviar Reporte de Hoy
                     </a>
                 @else
-                    <a href="{{ route('asesor.report.edit') }}" class="px-4 py-2 rounded-xl text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-md shadow-amber-600/20">
-                        ✏️ Actualizar Reporte del Día de Hoy
+                    <a href="{{ route('asesor.report.edit') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-amber-600/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Actualizar Reporte de Hoy
                     </a>
                 @endif
             </div>
@@ -32,138 +38,139 @@
             {{-- Alertas de éxito/error --}}
             @if(session('success'))
                 <div class="p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 flex items-center gap-2">
-                    <span>{{ session('success') }}</span>
+                    <span class="text-lg">✅</span>
+                    <span class="text-sm font-semibold">{{ session('success') }}</span>
                 </div>
             @endif
             @if(session('error'))
-                <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
-                    {{ session('error') }}
+                <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 flex items-center gap-2">
+                    <span class="text-lg">❌</span>
+                    <span class="text-sm font-semibold">{{ session('error') }}</span>
                 </div>
             @endif
 
             {{-- 1. SEMÁFORO DE CAPTACIONES --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">🚦 Semáforo de Captaciones — Semana {{ $startOfWeek->format('d/m') }} al {{ $endOfWeek->format('d/m') }}</h3>
+            <div class="bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 transition-all duration-300 hover:shadow-indigo-500/5">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">🚦 Semáforo de Captaciones — Semana {{ $startOfWeek->format('d/m') }} al {{ $endOfWeek->format('d/m') }}</h3>
                 <div class="flex flex-col md:flex-row md:items-center gap-6">
                     <div class="flex-shrink-0">
                         @php
                             $colorClasses = match($trafficLight) {
-                                'green' => 'bg-green-500 shadow-green-500/40',
-                                'yellow' => 'bg-yellow-400 shadow-yellow-400/40',
-                                'red' => 'bg-red-500 shadow-red-500/40',
-                                default => 'bg-gray-400',
+                                'green' => 'bg-emerald-500 shadow-emerald-500/20 text-white',
+                                'yellow' => 'bg-amber-400 shadow-amber-400/20 text-gray-950',
+                                'red' => 'bg-rose-500 shadow-rose-500/20 text-white',
+                                default => 'bg-gray-400 text-white',
                             };
                             $statusText = match($trafficLight) {
                                 'green' => '🟢 ¡Excelente! Vas por buen camino',
                                 'yellow' => '🟡 En Progreso — ¡Tú puedes!',
                                 'red' => '🔴 En Alerta — ¡A darle con todo!',
-                                default => '⚪',
+                                default => '⚪ Sin datos',
                             };
                         @endphp
-                        <div class="w-20 h-20 rounded-2xl {{ $colorClasses }} shadow-lg flex items-center justify-center">
-                            <span class="text-3xl font-black text-white">{{ $totalCaptures }}</span>
+                        <div class="w-20 h-20 rounded-2xl {{ $colorClasses }} shadow-lg flex flex-col items-center justify-center border border-white/10">
+                            <span class="text-3xl font-black">{{ $totalCaptures }}</span>
+                            <span class="text-[9px] uppercase tracking-wider font-extrabold opacity-80">Capturas</span>
                         </div>
                     </div>
                     <div class="flex-1">
-                        <p class="text-xl font-bold text-gray-800 dark:text-gray-200">{{ $statusText }}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {{ $totalCaptures }} de {{ $kpiConfig ? $kpiConfig->weekly_goal : '10' }} captaciones esta semana ({{ $percentage }}%)
+                        <p class="text-lg font-black text-gray-900 dark:text-white">{{ $statusText }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Llevas <span class="font-bold text-indigo-500">{{ $totalCaptures }}</span> de un objetivo semanal de <span class="font-bold text-gray-700 dark:text-gray-300">{{ $kpiConfig ? $kpiConfig->weekly_goal : '10' }}</span> captaciones ({{ $percentage }}%)
                         </p>
-                        <div class="mt-3 w-full max-w-sm bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                            <div class="h-3 rounded-full {{ $colorClasses }} transition-all duration-500" style="width: {{ min($percentage, 100) }}%"></div>
+                        <div class="mt-4 w-full max-w-md bg-gray-100 dark:bg-gray-800 rounded-full h-3 overflow-hidden border border-gray-200/40 dark:border-gray-700/50">
+                            <div class="h-full rounded-full {{ $colorClasses }} transition-all duration-700 ease-out" style="width: {{ min($percentage, 100) }}%"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {{-- 2. MIS 6 INDICADORES DE HOY --}}
-            <div>
-                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-3">📊 Mis Indicadores de Hoy</h3>
+            <div class="bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">📊 Mis Indicadores de Hoy</h3>
                 @if($todayReport)
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         @php
                             $todayKpis = [
-                                ['label' => 'Visitas', 'value' => $todayReport->visits, 'icon' => '🏠', 'color' => 'blue', 'sub' => null],
-                                ['label' => 'Letrero', 'value' => $todayReport->sign_captures, 'icon' => '📋', 'color' => 'emerald', 'sub' => null],
-                                ['label' => 'Exclusiva', 'value' => $todayReport->exclusive_captures, 'icon' => '📝', 'color' => 'purple', 'sub' => null],
-                                ['label' => 'Cierres', 'value' => $todayReport->closings, 'icon' => '🤝', 'color' => 'amber', 'sub' => null],
-                                ['label' => 'Llamadas', 'value' => $todayReport->calls_made, 'icon' => '📞', 'color' => 'cyan', 'sub' => $todayReport->call_phone_number],
-                                ['label' => 'AlphaX', 'value' => $todayReport->properties_in_system, 'icon' => '💻', 'color' => 'rose', 'sub' => null],
+                                ['label' => 'Visitas', 'value' => $todayReport->visits, 'icon' => '🏠', 'color' => 'from-blue-500/10 to-indigo-500/10 text-blue-500 border-blue-500/20'],
+                                ['label' => 'Letrero', 'value' => $todayReport->sign_captures, 'icon' => '📋', 'color' => 'from-emerald-500/10 to-teal-500/10 text-emerald-500 border-emerald-500/20'],
+                                ['label' => 'Exclusiva', 'value' => $todayReport->exclusive_captures, 'icon' => '📝', 'color' => 'from-purple-500/10 to-pink-500/10 text-purple-500 border-purple-500/20'],
+                                ['label' => 'Cierres', 'value' => $todayReport->closings, 'icon' => '🤝', 'color' => 'from-amber-500/10 to-orange-500/10 text-amber-500 border-amber-500/20'],
+                                ['label' => 'Llamadas', 'value' => $todayReport->calls_made, 'icon' => '📞', 'color' => 'from-cyan-500/10 to-sky-500/10 text-cyan-500 border-cyan-500/20', 'sub' => $todayReport->call_phone_number],
+                                ['label' => 'AlphaX', 'value' => $todayReport->properties_in_system, 'icon' => '💻', 'color' => 'from-rose-500/10 to-red-500/10 text-rose-500 border-rose-500/20'],
                             ];
                         @endphp
                         @foreach($todayKpis as $kpi)
-                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center">
-                                <span class="text-2xl">{{ $kpi['icon'] }}</span>
-                                <p class="text-2xl font-black text-gray-800 dark:text-gray-200 mt-1">{{ $kpi['value'] }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ $kpi['label'] }}</p>
-                                @if($kpi['label'] === 'Llamadas' && $kpi['sub'])
-                                    <div class="mt-2 text-xxs text-gray-400 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded border border-gray-100 dark:border-gray-800 truncate" title="{{ $kpi['sub'] }}">
-                                        📞 {{ $kpi['sub'] }}
+                            <div class="bg-gradient-to-br {{ $kpi['color'] }} rounded-xl border p-4 text-center hover:scale-[1.03] transition-all duration-300">
+                                <span class="text-3xl filter drop-shadow">{{ $kpi['icon'] }}</span>
+                                <p class="text-3xl font-black mt-2 leading-none">{{ $kpi['value'] }}</p>
+                                <p class="text-[11px] uppercase tracking-wider font-extrabold opacity-70 mt-1.5">{{ $kpi['label'] }}</p>
+                                @if(isset($kpi['sub']) && $kpi['sub'])
+                                    <div class="mt-2 text-[10px] bg-white/40 dark:bg-black/25 p-1 rounded font-mono truncate" title="{{ $kpi['sub'] }}">
+                                        {{ $kpi['sub'] }}
                                     </div>
                                 @endif
                             </div>
                         @endforeach
                     </div>
-                    <div class="flex items-center justify-between mt-3 flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/60">
                         <p class="text-xs text-gray-400">
-                            Enviado: {{ $todayReport->created_at->format('H:i') }} hrs
+                            Reporte diario recibido a las: <span class="font-bold text-gray-500">{{ $todayReport->created_at->format('H:i') }}</span>
                         </p>
-                        <a href="{{ route('asesor.report.edit') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
-                            ✏️ Actualizar Reporte de Hoy
+                        <a href="{{ route('asesor.report.edit') }}" class="text-xs font-bold text-amber-500 hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Editar reporte de hoy
                         </a>
                     </div>
                 @else
-                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 text-center">
-                        <span class="text-3xl block mb-2">⏳</span>
-                        <p class="text-yellow-800 dark:text-yellow-200 font-bold">Aún no enviaste tu reporte de hoy</p>
-                        <p class="text-yellow-600 dark:text-yellow-400 text-sm mt-1 mb-4">Registra tu actividad para actualizar tu semáforo.</p>
-                        <a href="{{ route('asesor.report.create') }}" class="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                            📤 Enviar Reporte Ahora
+                    <div class="bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-500/20 rounded-2xl p-8 text-center">
+                        <span class="text-4xl block mb-2 filter drop-shadow">⏳</span>
+                        <p class="text-amber-800 dark:text-amber-300 font-extrabold text-base">Aún no registraste tu reporte de hoy</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs mt-1.5 mb-5 max-w-md mx-auto">Es sumamente importante que reportes tu actividad diaria para actualizar tu semáforo de metas y mantener la consistencia en el ranking de tu equipo.</p>
+                        <a href="{{ route('asesor.report.create') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Registrar mi reporte de hoy
                         </a>
                     </div>
                 @endif
             </div>
 
-            <!-- GRÁFICO DE COMPORTAMIENTO INDIVIDUAL DEL ASESOR -->
+            <!-- GRÁFICOS DE RENDIMIENTO -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Gráfico de Tendencia o Evolución semanal -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
-                        <span>📊</span> Actividad Diaria por Indicador (Semana Actual)
-                    </h3>
-                    <p class="text-xs text-gray-400 mb-4">Comparativa visual de tus visitas, captaciones, cierres y llamadas diarias registradas de Lunes a Viernes.</p>
+                <!-- Gráfico de Tendencia -->
+                <div class="bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 lg:col-span-2">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">📈 Actividad Diaria por Indicador (Semana Actual)</h3>
+                    <p class="text-xs text-gray-400 mb-4">Evolución visual de tus visitas, captaciones, cierres y llamadas diarias.</p>
                     <div id="asesorPerformanceTrendChart" class="w-full"></div>
                 </div>
 
-                <!-- Mezcla de mi Productividad Semanal -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
-                        <span>🎯</span> Mezcla de mi Actividad
-                    </h3>
-                    <p class="text-xs text-gray-400 mb-4">Proporción de tus actividades realizadas en la semana actual.</p>
+                <!-- Mezcla de Productividad -->
+                <div class="bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">🎯 Mezcla de mi Actividad</h3>
+                    <p class="text-xs text-gray-400 mb-4">Proporción general de actividades de la semana.</p>
                     <div id="asesorActivityDonutChart" class="w-full flex justify-center"></div>
                 </div>
             </div>
 
             {{-- 3. ACUMULADO SEMANAL --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">📈 Mi Acumulado Semanal</h3>
+            <div class="bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">📈 Mi Acumulado Semanal</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     @php
                         $weeklyCards = [
-                            ['label' => 'Visitas', 'value' => $weeklyTotals['visits'], 'icon' => '🏠'],
-                            ['label' => 'Letrero', 'value' => $weeklyTotals['sign_captures'], 'icon' => '📋'],
-                            ['label' => 'Exclusiva', 'value' => $weeklyTotals['exclusive_captures'], 'icon' => '📝'],
-                            ['label' => 'Cierres', 'value' => $weeklyTotals['closings'], 'icon' => '🤝'],
-                            ['label' => 'Llamadas', 'value' => $weeklyTotals['calls_made'], 'icon' => '📞'],
-                            ['label' => 'AlphaX', 'value' => $weeklyTotals['properties_in_system'], 'icon' => '💻'],
+                            ['label' => 'Visitas', 'value' => $weeklyTotals['visits'], 'icon' => '🏠', 'bg' => 'bg-blue-500/5 dark:bg-blue-500/10 text-blue-500'],
+                            ['label' => 'Letrero', 'value' => $weeklyTotals['sign_captures'], 'icon' => '📋', 'bg' => 'bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-500'],
+                            ['label' => 'Exclusiva', 'value' => $weeklyTotals['exclusive_captures'], 'icon' => '📝', 'bg' => 'bg-purple-500/5 dark:bg-purple-500/10 text-purple-500'],
+                            ['label' => 'Cierres', 'value' => $weeklyTotals['closings'], 'icon' => '🤝', 'bg' => 'bg-amber-500/5 dark:bg-amber-500/10 text-amber-500'],
+                            ['label' => 'Llamadas', 'value' => $weeklyTotals['calls_made'], 'icon' => '📞', 'bg' => 'bg-cyan-500/5 dark:bg-cyan-500/10 text-cyan-500'],
+                            ['label' => 'AlphaX', 'value' => $weeklyTotals['properties_in_system'], 'icon' => '💻', 'bg' => 'bg-rose-500/5 dark:bg-rose-500/10 text-rose-500'],
                         ];
                     @endphp
                     @foreach($weeklyCards as $card)
-                        <div class="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                            <span class="text-xl">{{ $card['icon'] }}</span>
-                            <p class="text-xl font-black text-gray-800 dark:text-gray-200">{{ $card['value'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $card['label'] }}</p>
+                        <div class="text-center p-4 rounded-xl border border-gray-100 dark:border-gray-800/60 {{ $card['bg'] }} transition-all duration-300">
+                            <span class="text-2xl filter drop-shadow">{{ $card['icon'] }}</span>
+                            <p class="text-2xl font-black mt-1 leading-none">{{ $card['value'] }}</p>
+                            <p class="text-[10px] uppercase tracking-wider font-extrabold opacity-75 mt-1.5">{{ $card['label'] }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -171,47 +178,64 @@
 
             {{-- 4. RANKING DEL EQUIPO --}}
             @if($teamAsesores->count() > 0)
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">🏆 Ranking del Equipo — Semana Actual</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Ranking basado en captaciones totales (Letrero + Exclusiva). No puedes ver los datos de otros asesores, solo la posición.</p>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700 text-gray-500 text-xs uppercase">
-                                    <th class="text-left py-3 px-3 font-semibold">#</th>
-                                    <th class="text-left py-3 px-2 font-semibold">Asesor</th>
-                                    <th class="text-center py-3 px-2 font-semibold">🏠</th>
-                                    <th class="text-center py-3 px-2 font-semibold">📋+📝</th>
-                                    <th class="text-center py-3 px-2 font-semibold">🤝</th>
-                                    <th class="text-center py-3 px-2 font-semibold">📞</th>
-                                    <th class="text-center py-3 px-2 font-semibold">💻</th>
+                <div id="ranking" class="scroll-mt-20 bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 transition-all duration-300 hover:shadow-indigo-500/5">
+                    <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
+                        <div>
+                            <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span class="bg-indigo-500/10 text-indigo-500 p-1.5 rounded-lg text-sm">🏆</span> 
+                                Ranking del Equipo — Semana Actual
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ranking basado en captaciones totales (Letrero + Exclusiva).</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            {{ $teamAsesores->count() }} Integrantes
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-800/60">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-[11px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-800/40 dark:text-gray-400 font-extrabold tracking-wider border-b border-gray-200/60 dark:border-gray-800/60">
+                                <tr>
+                                    <th scope="col" class="py-3.5 px-4 font-bold rounded-l-lg">Posición</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold">Asesor</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🏠 Visitas</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📋+📝 Captaciones</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🤝 Cierres</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📞 Llamadas</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center rounded-r-lg">💻 AlphaX</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/40">
                                 @foreach($teamAsesores as $index => $member)
-                                    <tr class="{{ $member->id === $user->id ? 'bg-blue-50 dark:bg-blue-900/20' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/30 text-gray-700 dark:text-gray-300">
-                                        <td class="py-3 px-3">
+                                    <tr class="{{ $member->id === $user->id ? 'bg-indigo-500/5 dark:bg-indigo-500/10' : '' }} hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                        <td class="py-4 px-4 font-medium text-gray-900 dark:text-white">
                                             @if($index === 0)
-                                                <span class="text-yellow-500">🥇</span>
+                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-500 text-xs font-bold">🥇</span>
                                             @elseif($index === 1)
-                                                <span class="text-gray-400">🥈</span>
+                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300/20 text-slate-300 text-xs font-bold">🥈</span>
                                             @elseif($index === 2)
-                                                <span class="text-amber-700">🥉</span>
+                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-700/20 text-amber-600 text-xs font-bold">🥉</span>
                                             @else
-                                                <span class="text-gray-400 font-bold">#{{ $index + 1 }}</span>
+                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-500/10 text-gray-400 text-[10px] font-bold">#{{ $index + 1 }}</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-2 font-bold {{ $member->id === $user->id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200' }}">
-                                            {{ $member->name }}
-                                            @if($member->id === $user->id)
-                                                <span class="text-xs font-normal text-blue-500">(Tú)</span>
-                                            @endif
+                                        <td class="py-4 px-4 font-bold {{ $member->id === $user->id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-850 dark:text-gray-200' }}">
+                                            <div class="flex items-center gap-2">
+                                                {{ $member->name }}
+                                                @if($member->id === $user->id)
+                                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-500 text-white uppercase tracking-wider">Tú</span>
+                                                @endif
+                                            </div>
                                         </td>
-                                        <td class="py-3 px-2 text-center">{{ $member->visits }}</td>
-                                        <td class="py-3 px-2 text-center font-bold">{{ $member->total_captures }}</td>
-                                        <td class="py-3 px-2 text-center">{{ $member->closings }}</td>
-                                        <td class="py-3 px-2 text-center">{{ $member->calls_made }}</td>
-                                        <td class="py-3 px-2 text-center">{{ $member->properties_in_system }}</td>
+                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->visits }}</td>
+                                        <td class="py-4 px-4 text-center">
+                                            <span class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold rounded-full bg-indigo-500/10 text-indigo-450 dark:text-indigo-400 border border-indigo-500/20">
+                                                {{ $member->total_captures }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->closings }}</td>
+                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->calls_made }}</td>
+                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->properties_in_system }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -221,52 +245,65 @@
             @endif
 
             {{-- 5. HISTORIAL DE REPORTES --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">📅 Mis Reportes Anteriores</h3>
+            <div id="historial" class="scroll-mt-20 bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 transition-all duration-300 hover:shadow-indigo-500/5">
+                <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
+                    <div>
+                        <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="bg-indigo-500/10 text-indigo-500 p-1.5 rounded-lg text-sm">📅</span> 
+                            Mis Reportes Anteriores
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Historial detallado de tu actividad diaria reportada en los últimos 30 días.</p>
+                    </div>
+                </div>
+
                 @if($history->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700 text-gray-500 text-xs uppercase">
-                                    <th class="text-left py-3 px-2 font-semibold">Fecha</th>
-                                    <th class="text-center py-3 px-2 font-semibold">🏠</th>
-                                    <th class="text-center py-3 px-2 font-semibold">📋</th>
-                                    <th class="text-center py-3 px-2 font-semibold">📝</th>
-                                    <th class="text-center py-3 px-2 font-semibold">🤝</th>
-                                    <th class="text-center py-3 px-2 font-semibold">📞</th>
-                                    <th class="text-center py-3 px-2 font-semibold">💻</th>
+                    <div class="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-800/60">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-[11px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-800/40 dark:text-gray-400 font-extrabold tracking-wider border-b border-gray-200/60 dark:border-gray-800/60">
+                                <tr>
+                                    <th scope="col" class="py-3.5 px-4 font-bold rounded-l-lg">Fecha</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🏠 Visitas</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📋 Letrero</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📝 Exclusiva</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🤝 Cierres</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📞 Llamadas</th>
+                                    <th scope="col" class="py-3.5 px-4 font-bold text-center rounded-r-lg">💻 AlphaX</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/40">
                                 @foreach($history as $report)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 text-gray-700 dark:text-gray-300">
-                                        <td class="py-2.5 px-2 font-medium">{{ $report->report_date->format('d/m/Y') }}</td>
-                                        <td class="py-2.5 px-2 text-center">{{ $report->visits }}</td>
-                                        <td class="py-2.5 px-2 text-center">{{ $report->sign_captures }}</td>
-                                        <td class="py-2.5 px-2 text-center">{{ $report->exclusive_captures }}</td>
-                                        <td class="py-2.5 px-2 text-center">{{ $report->closings }}</td>
-                                        <td class="py-2.5 px-2 text-center">
-                                            <span class="font-bold">{{ $report->calls_made }}</span>
-                                            @if($report->call_phone_number)
-                                                <span class="block text-xxs text-gray-400 truncate max-w-[100px] mx-auto" title="{{ $report->call_phone_number }}">
-                                                    {{ $report->call_phone_number }}
-                                                </span>
-                                            @endif
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                        <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
+                                            {{ $report->report_date->format('d/m/Y') }}
                                         </td>
-                                        <td class="py-2.5 px-2 text-center">{{ $report->properties_in_system }}</td>
+                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->visits }}</td>
+                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->sign_captures }}</td>
+                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->exclusive_captures }}</td>
+                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->closings }}</td>
+                                        <td class="py-3.5 px-4 text-center">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <span class="font-bold text-gray-900 dark:text-white">{{ $report->calls_made }}</span>
+                                                @if($report->call_phone_number)
+                                                    <span class="block text-[10px] text-gray-400 mt-0.5 max-w-[120px] truncate" title="{{ $report->call_phone_number }}">
+                                                        📞 {{ $report->call_phone_number }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->properties_in_system }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                 @else
-                    <div class="text-center py-8 text-gray-500">
-                        No tienes reportes anteriores. ¡Envía tu primer reporte hoy!
+                    <div class="text-center py-12 text-gray-400 bg-gray-50/50 dark:bg-gray-900/10 border border-dashed border-gray-200 dark:border-gray-800/60 rounded-xl">
+                        <span class="text-3xl block mb-2">📅</span>
+                        <p class="font-semibold text-sm">No tienes reportes anteriores</p>
+                        <p class="text-xs text-gray-500 mt-1">¡Registra tu primer reporte del día de hoy para iniciar tu historial!</p>
                     </div>
                 @endif
             </div>
-
-
 
         </div>
     </div>
@@ -313,8 +350,8 @@
                 plotOptions: {
                     bar: {
                         horizontal: false,
-                        columnWidth: '60%',
-                        borderRadius: 3,
+                        columnWidth: '55%',
+                        borderRadius: 4,
                     },
                 },
                 dataLabels: {
@@ -365,14 +402,13 @@
                     theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
                 },
                 grid: {
-                    borderColor: '#f1f1f1',
+                    borderColor: '#37415120',
                     strokeDashArray: 4
                 }
             };
 
             const chartTrend = new ApexCharts(document.querySelector("#asesorPerformanceTrendChart"), optionsTrend);
             chartTrend.render();
-
 
             // 2. Gráfico Donut de Mezcla de Productividad Personal
             const totalVisits = {{ $weeklyTotals['visits'] }};
@@ -405,19 +441,19 @@
                 plotOptions: {
                     pie: {
                         donut: {
-                            size: '60%',
+                            size: '65%',
                             labels: {
                                 show: true,
                                 total: {
                                     show: true,
-                                    label: 'KPIs',
+                                    label: 'Total KPIs',
                                     formatter: function (w) {
                                         return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
                                     },
                                     style: {
-                                        color: '#374151',
-                                        fontSize: '14px',
-                                        fontWeight: 700
+                                        color: '#6b7280',
+                                        fontSize: '13px',
+                                        fontWeight: 600
                                     }
                                 }
                             }
@@ -430,4 +466,11 @@
             chartDonut.render();
         });
     </script>
+
+    <!-- Smooth Scrolling Style directly injected -->
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </x-app-layout>
