@@ -4,7 +4,7 @@
             <div>
                 <a href="{{ route('team-leader.dashboard') }}" class="text-sm text-blue-600 hover:underline">← Volver</a>
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">🗺️ Mapa de Visitas del Equipo</h2>
-                <p class="text-sm text-gray-500 mt-1">Semana del {{ $startOfWeek->format('d/m/Y') }} al {{ $endOfWeek->format('d/m/Y') }}</p>
+                <p class="text-sm text-gray-500 mt-1">Periodo del {{ $startDate->format('d/m/Y') }} al {{ $endDate->format('d/m/Y') }}</p>
             </div>
         </div>
     </x-slot>
@@ -14,6 +14,58 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+            <!-- FILTRO DE BÚSQUEDA DE ASESOR Y FECHAS -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 print:hidden">
+                <form method="GET" action="{{ route('team-leader.visits-map') }}" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Rango de Fecha -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Rango de Fecha</label>
+                            <select name="filter_type" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                                <option value="dia" {{ $filterType === 'dia' ? 'selected' : '' }}>Hoy</option>
+                                <option value="semana" {{ $filterType === 'semana' ? 'selected' : '' }}>Esta Semana</option>
+                                <option value="mes" {{ $filterType === 'mes' ? 'selected' : '' }}>Este Mes</option>
+                                <option value="custom" {{ $filterType === 'custom' ? 'selected' : '' }}>Rango Personalizado</option>
+                            </select>
+                        </div>
+
+                        <!-- Asesor -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Asesor del Equipo</label>
+                            <select name="user_id" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                                <option value="">Todos los Asesores</option>
+                                @foreach($asesoresForFilter as $a)
+                                    <option value="{{ $a->id }}" {{ $asesorId == $a->id ? 'selected' : '' }}>{{ $a->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="flex items-end gap-2">
+                            <button type="submit" class="flex-1 px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors text-center">
+                                🔍 Filtrar
+                            </button>
+                            <a href="{{ route('team-leader.visits-map') }}" class="px-3 py-2.5 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-center" title="Limpiar Filtros">
+                                🧹
+                            </a>
+                        </div>
+                    </div>
+
+                    @if($filterType === 'custom')
+                        <div class="flex items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Desde</label>
+                                <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Hasta</label>
+                                <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                            </div>
+                        </div>
+                    @endif
+                </form>
+            </div>
 
             {{-- Stats --}}
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

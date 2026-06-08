@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DailyReport;
 use App\Models\Office;
+use App\Models\Team;
 use App\Models\User;
 use App\Models\KpiConfig;
 use Carbon\Carbon;
@@ -314,17 +315,64 @@ class DirectorDashboardController extends Controller
     /**
      * Mostrar mapa de visitas global con geolocalización para el Director.
      */
-    public function visitsMap()
+    public function visitsMap(Request $request)
     {
+        // 1. Manejo de Fechas
+        $filterType = $request->get('filter_type', 'semana');
+        $startDateInput = $request->get('start_date');
+        $endDateInput = $request->get('end_date');
+
         $today = Carbon::today();
-        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
-        $endOfWeek   = $today->copy()->endOfWeek(Carbon::SUNDAY);
+        switch ($filterType) {
+            case 'dia':
+                $startDate = $today->copy()->startOfDay();
+                $endDate = $today->copy()->endOfDay();
+                break;
+            case 'mes':
+                $startDate = $today->copy()->startOfMonth();
+                $endDate = $today->copy()->endOfMonth();
+                break;
+            case 'custom':
+                $startDate = $startDateInput ? Carbon::parse($startDateInput)->startOfDay() : $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $endDateInput ? Carbon::parse($endDateInput)->endOfDay() : $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+            case 'semana':
+            default:
+                $startDate = $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+        }
 
-        // Obtener todos los asesores activos
-        $asesores = User::where('role', 'asesor')
-            ->where('is_active', true)
-            ->get();
+        // 2. Filtros de Entidades
+        $officeId = $request->get('office_id');
+        $teamId = $request->get('team_id');
+        $asesorId = $request->get('user_id');
 
+        // Obtener todos los datos para los dropdowns de filtros
+        $allOffices = Office::orderBy('name')->get();
+        $allTeams = Team::orderBy('name')->get();
+        
+        $allAsesoresQuery = User::where('role', 'asesor')->where('is_active', true);
+        if ($officeId) {
+            $allAsesoresQuery->where('office_id', $officeId);
+        }
+        if ($teamId) {
+            $allAsesoresQuery->where('team_id', $teamId);
+        }
+        $asesoresForFilter = $allAsesoresQuery->orderBy('name')->get();
+
+        // 3. Obtener asesores filtrados para consultar visitas
+        $asesoresQuery = User::where('role', 'asesor')->where('is_active', true);
+        if ($officeId) {
+            $asesoresQuery->where('office_id', $officeId);
+        }
+        if ($teamId) {
+            $asesoresQuery->where('team_id', $teamId);
+        }
+        if ($asesorId) {
+            $asesoresQuery->where('id', $asesorId);
+        }
+        $asesores = $asesoresQuery->get();
         $asesoresCount = $asesores->count();
 
         // Colores únicos por asesor
@@ -341,7 +389,7 @@ class DirectorDashboardController extends Controller
 
         foreach ($asesores as $asesor) {
             $reports = DailyReport::where('user_id', $asesor->id)
-                ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+                ->whereBetween('report_date', [$startDate, $endDate])
                 ->get();
 
             $totalVisits += $reports->sum('visits');
@@ -371,9 +419,11 @@ class DirectorDashboardController extends Controller
         $uniqueClients = count($uniqueClientsSet);
 
         return view('director.visits-map', compact(
-            'startOfWeek', 'endOfWeek', 'totalVisits', 'geoVisits',
+            'startDate', 'endDate', 'filterType', 'totalVisits', 'geoVisits',
             'uniqueClients', 'asesoresCount', 'mapMarkers',
-            'allVisitDetails', 'asesorColors'
+            'allVisitDetails', 'asesorColors',
+            'allOffices', 'allTeams', 'asesoresForFilter',
+            'officeId', 'teamId', 'asesorId'
         ));
     }
 

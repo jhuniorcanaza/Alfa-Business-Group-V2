@@ -192,18 +192,54 @@ class TeamLeaderDashboardController extends Controller
     /**
      * Mapa de visitas del equipo (semana actual).
      */
-    public function visitsMap()
+    public function visitsMap(Request $request)
     {
         $user = Auth::user();
-        $today = Carbon::today();
-        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
-        $endOfWeek   = $today->copy()->endOfWeek(Carbon::SUNDAY);
+        
+        // 1. Manejo de Fechas
+        $filterType = $request->get('filter_type', 'semana');
+        $startDateInput = $request->get('start_date');
+        $endDateInput = $request->get('end_date');
 
-        $asesores = User::where('team_id', $user->team_id)
+        $today = Carbon::today();
+        switch ($filterType) {
+            case 'dia':
+                $startDate = $today->copy()->startOfDay();
+                $endDate = $today->copy()->endOfDay();
+                break;
+            case 'mes':
+                $startDate = $today->copy()->startOfMonth();
+                $endDate = $today->copy()->endOfMonth();
+                break;
+            case 'custom':
+                $startDate = $startDateInput ? Carbon::parse($startDateInput)->startOfDay() : $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $endDateInput ? Carbon::parse($endDateInput)->endOfDay() : $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+            case 'semana':
+            default:
+                $startDate = $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+        }
+
+        $asesorId = $request->get('user_id');
+
+        // Asesores del equipo para filtrar
+        $asesoresForFilter = User::where('team_id', $user->team_id)
             ->where('role', 'asesor')
             ->where('is_active', true)
+            ->orderBy('name')
             ->get();
 
+        // Consulta de asesores a mostrar en el mapa
+        $asesoresQuery = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->where('is_active', true);
+
+        if ($asesorId) {
+            $asesoresQuery->where('id', $asesorId);
+        }
+        $asesores = $asesoresQuery->get();
         $asesoresCount = $asesores->count();
 
         // Colores únicos por asesor
@@ -220,7 +256,7 @@ class TeamLeaderDashboardController extends Controller
 
         foreach ($asesores as $asesor) {
             $reports = DailyReport::where('user_id', $asesor->id)
-                ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+                ->whereBetween('report_date', [$startDate, $endDate])
                 ->get();
 
             $totalVisits += $reports->sum('visits');
@@ -250,9 +286,9 @@ class TeamLeaderDashboardController extends Controller
         $uniqueClients = count($uniqueClientsSet);
 
         return view('team-leader.visits-map', compact(
-            'startOfWeek', 'endOfWeek', 'totalVisits', 'geoVisits',
+            'startDate', 'endDate', 'filterType', 'totalVisits', 'geoVisits',
             'uniqueClients', 'asesoresCount', 'mapMarkers',
-            'allVisitDetails', 'asesorColors'
+            'allVisitDetails', 'asesorColors', 'asesoresForFilter', 'asesorId'
         ));
     }
 
