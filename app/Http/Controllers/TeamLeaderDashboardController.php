@@ -561,29 +561,63 @@ class TeamLeaderDashboardController extends Controller
         return view('team-leader.acumulado', compact('user', 'teamWeekly', 'startOfWeek', 'endOfWeek'));
     }
 
-    /**
-     * Fotos de letreros page.
-     */
-    public function letreros()
+    public function letreros(Request $request)
     {
         $user = Auth::user();
-        $today = Carbon::today();
-        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
-        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+        
+        // 1. Manejo de Fechas
+        $filterType = $request->get('filter_type', 'semana');
+        $startDateInput = $request->get('start_date');
+        $endDateInput = $request->get('end_date');
 
-        $asesores = User::where('team_id', $user->team_id)
+        $today = Carbon::today();
+        switch ($filterType) {
+            case 'dia':
+                $startDate = $today->copy()->startOfDay();
+                $endDate = $today->copy()->endOfDay();
+                break;
+            case 'mes':
+                $startDate = $today->copy()->startOfMonth();
+                $endDate = $today->copy()->endOfMonth();
+                break;
+            case 'custom':
+                $startDate = $startDateInput ? Carbon::parse($startDateInput)->startOfDay() : $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $endDateInput ? Carbon::parse($endDateInput)->endOfDay() : $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+            case 'semana':
+            default:
+                $startDate = $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endDate = $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+        }
+
+        $asesorId = $request->get('user_id');
+
+        // Asesores del equipo para filtrar
+        $asesoresForFilter = User::where('team_id', $user->team_id)
             ->where('role', 'asesor')
             ->where('is_active', true)
+            ->orderBy('name')
             ->get();
 
-        // Obtener todos los reportes de la semana con fotos de letrero
-        $reportsWithPhotos = DailyReport::whereIn('user_id', $asesores->pluck('id'))
-            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+        // Determinar qué asesores consultar
+        if ($asesorId) {
+            $userIds = [$asesorId];
+        } else {
+            $userIds = $asesoresForFilter->pluck('id');
+        }
+
+        // Obtener reportes con fotos de letrero en el rango y asesores filtrados
+        $reportsWithPhotos = DailyReport::whereIn('user_id', $userIds)
+            ->whereBetween('report_date', [$startDate, $endDate])
             ->whereNotNull('sign_image_path')
             ->orderBy('report_date', 'desc')
             ->get();
 
-        return view('team-leader.letreros', compact('user', 'reportsWithPhotos', 'startOfWeek', 'endOfWeek'));
+        return view('team-leader.letreros', compact(
+            'user', 'reportsWithPhotos', 'startDate', 'endDate', 
+            'filterType', 'asesoresForFilter', 'asesorId'
+        ));
     }
 }
 
