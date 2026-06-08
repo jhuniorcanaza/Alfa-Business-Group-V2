@@ -20,6 +20,14 @@
     <body class="font-sans antialiased text-gray-800 dark:text-gray-200">
         @php
             $role = Auth::check() ? Auth::user()->role : null;
+            $todayReport = null;
+            $reportRoute = 'login';
+            if (Auth::check() && $role === 'asesor') {
+                $todayReport = \App\Models\DailyReport::where('user_id', Auth::id())
+                    ->where('report_date', \Carbon\Carbon::today())
+                    ->first();
+                $reportRoute = $todayReport ? 'asesor.report.edit' : 'asesor.report.create';
+            }
         @endphp
 
         <div class="min-h-screen flex bg-gray-100 dark:bg-[#0d0e15]">
