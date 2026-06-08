@@ -22,11 +22,13 @@
             $role = Auth::check() ? Auth::user()->role : null;
             $todayReport = null;
             $reportRoute = 'login';
+            $isActiveReport = false;
             if (Auth::check() && $role === 'asesor') {
                 $todayReport = \App\Models\DailyReport::where('user_id', Auth::id())
                     ->where('report_date', \Carbon\Carbon::today())
                     ->first();
                 $reportRoute = $todayReport ? 'asesor.report.edit' : 'asesor.report.create';
+                $isActiveReport = request()->routeIs('asesor.report.create') || request()->routeIs('asesor.report.edit');
             }
         @endphp
 
