@@ -8,7 +8,7 @@
     };
 @endphp
 
-<nav class="sticky top-0 z-40 bg-[#0f111a] border-b border-gray-850 text-gray-300 print:hidden h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+<nav class="sticky top-0 z-40 bg-[#0f111a] text-gray-300 print:hidden h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
     <!-- Left side: Hamburger button (Mobile) -->
     <div class="flex items-center gap-3">
         <button @click="sidebarOpen = !sidebarOpen" class="md:hidden inline-flex items-center justify-center p-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 focus:outline-none transition active:scale-95">

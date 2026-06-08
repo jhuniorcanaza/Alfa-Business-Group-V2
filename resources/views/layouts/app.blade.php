@@ -42,7 +42,7 @@
 
             <!-- SIDEBAR UNIFICADO (DESKTOP & MOBILE) -->
             @if(Auth::check())
-                <aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:sticky top-0 left-0 z-50 md:z-auto flex flex-col w-64 bg-[#11131c] border-r border-gray-850 h-screen p-5 shrink-0 select-none text-gray-400 transition-transform duration-300 md:translate-x-0 md:flex">
+                <aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:sticky top-0 left-0 z-50 md:z-auto flex flex-col w-64 bg-[#11131c] border-r border-gray-800/20 h-screen p-5 shrink-0 select-none text-gray-400 transition-transform duration-300 md:translate-x-0 md:flex">
                     <!-- Sidebar Header / Logo -->
                     <div class="flex items-center gap-2.5 mb-8 px-2">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -61,16 +61,6 @@
                                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('asesor.dashboard') && !request()->routeIs('asesor.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
                                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                                     Mi Dashboard
-                                </a>
-                                <a href="{{ route('asesor.dashboard') }}#historial" 
-                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    Mi historial
-                                </a>
-                                <a href="{{ route('asesor.dashboard') }}#ranking" 
-                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-                                    Ranking
                                 </a>
                             </div>
 
@@ -262,7 +252,7 @@
 
                 <!-- Page Heading -->
                 @isset($header)
-                    <header class="bg-white dark:bg-[#11131c] border-b border-gray-200 dark:border-gray-800/60 shadow-sm print:hidden">
+                    <header class="bg-white dark:bg-[#11131c] print:hidden">
                         <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
