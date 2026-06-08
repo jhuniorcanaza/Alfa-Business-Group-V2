@@ -1,0 +1,410 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\DailyReport;
+use App\Models\KpiConfig;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class TeamLeaderDashboardController extends Controller
+{
+    /**
+     * Dashboard principal del Team Líder.
+     * Solo lectura: monitoreo de asesores del equipo asignado.
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+
+        $filterType = $request->get('filter_type', 'semana');
+        
+        switch ($filterType) {
+            case 'dia':
+                $startOfWeek = $today->copy()->startOfDay();
+                $endOfWeek = $today->copy()->endOfDay();
+                break;
+            case 'mes':
+                $startOfWeek = $today->copy()->startOfMonth();
+                $endOfWeek = $today->copy()->endOfMonth();
+                break;
+            case 'custom':
+                $startOfWeek = Carbon::parse($request->get('start_date', $today->copy()->startOfWeek(Carbon::MONDAY)))->startOfDay();
+                $endOfWeek = Carbon::parse($request->get('end_date', $today->copy()->endOfWeek(Carbon::SUNDAY)))->endOfDay();
+                break;
+            case 'semana':
+            default:
+                $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+                $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+                break;
+        }
+
+        // Asesores activos de mi equipo
+        $asesores = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        // Reportes de hoy
+        $todayReports = DailyReport::whereIn('user_id', $asesores->pluck('id'))
+            ->where('report_date', $today)
+            ->get()
+            ->keyBy('user_id');
+
+        // Reportes del rango agrupados por asesor
+        $weeklyReportsAll = DailyReport::whereIn('user_id', $asesores->pluck('id'))
+            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+            ->get()
+            ->groupBy('user_id');
+
+        // Construir datos completos de cada asesor
+        $asesoresData = $asesores->map(function ($asesor) use ($todayReports, $weeklyReportsAll) {
+            $todayReport = $todayReports->get($asesor->id);
+            $weeklyReports = $weeklyReportsAll->get($asesor->id, collect());
+
+            return (object) [
+                'id' => $asesor->id,
+                'name' => $asesor->name,
+                'email' => $asesor->email,
+                'phone' => $asesor->phone,
+                'sent_today' => $todayReport !== null,
+                'today' => $todayReport ? [
+                    'visits' => $todayReport->visits,
+                    'sign_captures' => $todayReport->sign_captures,
+                    'exclusive_captures' => $todayReport->exclusive_captures,
+                    'closings' => $todayReport->closings,
+                    'calls_made' => $todayReport->calls_made,
+                    'call_phone_number' => $todayReport->call_phone_number,
+                    'properties_in_system' => $todayReport->properties_in_system,
+                    'source' => $todayReport->source,
+                    'created_at' => $todayReport->created_at,
+                    'sign_image_path' => $todayReport->sign_image_path,
+                ] : null,
+                'weekly' => [
+                    'visits' => $weeklyReports->sum('visits'),
+                    'sign_captures' => $weeklyReports->sum('sign_captures'),
+                    'exclusive_captures' => $weeklyReports->sum('exclusive_captures'),
+                    'closings' => $weeklyReports->sum('closings'),
+                    'calls_made' => $weeklyReports->sum('calls_made'),
+                    'properties_in_system' => $weeklyReports->sum('properties_in_system'),
+                ],
+                'total_captures' => $weeklyReports->sum('sign_captures') + $weeklyReports->sum('exclusive_captures'),
+                'reports_count' => $weeklyReports->count(),
+            ];
+        });
+
+        // Configuración de semáforo
+        $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('is_active', true)
+            ->first();
+
+        // Asesores sin reporte hoy
+        $missingReports = $asesoresData->where('sent_today', false);
+
+        // Acumulado semanal del equipo
+        $teamWeekly = [
+            'visits' => $asesoresData->sum('weekly.visits'),
+            'sign_captures' => $asesoresData->sum('weekly.sign_captures'),
+            'exclusive_captures' => $asesoresData->sum('weekly.exclusive_captures'),
+            'closings' => $asesoresData->sum('weekly.closings'),
+            'calls_made' => $asesoresData->sum('weekly.calls_made'),
+            'properties_in_system' => $asesoresData->sum('weekly.properties_in_system'),
+        ];
+
+        // Rankings por cada uno de los 6 indicadores
+        $rankings = [
+            'visits' => $asesoresData->sortByDesc('weekly.visits')->values(),
+            'sign_captures' => $asesoresData->sortByDesc('weekly.sign_captures')->values(),
+            'exclusive_captures' => $asesoresData->sortByDesc('weekly.exclusive_captures')->values(),
+            'closings' => $asesoresData->sortByDesc('weekly.closings')->values(),
+            'calls_made' => $asesoresData->sortByDesc('weekly.calls_made')->values(),
+            'properties_in_system' => $asesoresData->sortByDesc('weekly.properties_in_system')->values(),
+        ];
+
+        // Nombre del equipo
+        $team = $user->team;
+
+        return view('dashboards.team-leader', compact(
+            'user',
+            'team',
+            'asesoresData',
+            'kpiConfig',
+            'missingReports',
+            'teamWeekly',
+            'rankings',
+            'today',
+            'startOfWeek',
+            'endOfWeek',
+            'filterType'
+        ));
+    }
+
+    /**
+     * Ver historial completo de un asesor específico.
+     * Solo puede ver asesores de su propio equipo.
+     */
+    public function asesorDetail(User $asesor)
+    {
+        $user = Auth::user();
+
+        // Seguridad: verificar que el asesor pertenece a mi equipo
+        if ($asesor->team_id !== $user->team_id || $asesor->role !== 'asesor') {
+            abort(403, 'No tienes permiso para ver este asesor.');
+        }
+
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        // Reporte de hoy
+        $todayReport = DailyReport::where('user_id', $asesor->id)
+            ->where('report_date', $today)
+            ->first();
+
+        // Historial de reportes (últimos 60 días)
+        $history = DailyReport::where('user_id', $asesor->id)
+            ->orderBy('report_date', 'desc')
+            ->limit(60)
+            ->get();
+
+        // Reportes de esta semana para tendencia diaria
+        $weeklyReports = DailyReport::where('user_id', $asesor->id)
+            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+            ->orderBy('report_date')
+            ->get();
+
+        // Acumulado semanal
+        $weeklyTotals = [
+            'visits' => $weeklyReports->sum('visits'),
+            'sign_captures' => $weeklyReports->sum('sign_captures'),
+            'exclusive_captures' => $weeklyReports->sum('exclusive_captures'),
+            'closings' => $weeklyReports->sum('closings'),
+            'calls_made' => $weeklyReports->sum('calls_made'),
+            'properties_in_system' => $weeklyReports->sum('properties_in_system'),
+        ];
+
+        $totalCaptures = $weeklyTotals['sign_captures'] + $weeklyTotals['exclusive_captures'];
+
+        // Semáforo
+        $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('is_active', true)
+            ->first();
+
+        $trafficLight = 'green';
+        $percentage = 100;
+        if ($kpiConfig && $kpiConfig->weekly_goal > 0) {
+            $percentage = round(($totalCaptures / $kpiConfig->weekly_goal) * 100);
+            $trafficLight = $kpiConfig->getTrafficLightColor($totalCaptures);
+        }
+
+        // Estadísticas históricas
+        $totalReports = DailyReport::where('user_id', $asesor->id)->count();
+        $avgVisits = DailyReport::where('user_id', $asesor->id)->avg('visits') ?? 0;
+        $avgCaptures = DailyReport::where('user_id', $asesor->id)
+            ->selectRaw('AVG(sign_captures + exclusive_captures) as avg_captures')
+            ->value('avg_captures') ?? 0;
+
+        // Tendencia diaria de la semana (para mini-gráfico)
+        $weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        $weeklyTrend = [];
+        for ($i = 0; $i < 7; $i++) {
+            $day = $startOfWeek->copy()->addDays($i);
+            $report = $weeklyReports->firstWhere('report_date', $day);
+            $weeklyTrend[] = [
+                'day' => $weekDays[$i],
+                'date' => $day->format('d/m'),
+                'visits' => $report ? $report->visits : 0,
+                'captures' => $report ? ($report->sign_captures + $report->exclusive_captures) : 0,
+                'has_report' => $report !== null,
+            ];
+        }
+
+        return view('dashboards.team-leader-asesor-detail', compact(
+            'user',
+            'asesor',
+            'todayReport',
+            'history',
+            'weeklyTotals',
+            'totalCaptures',
+            'trafficLight',
+            'percentage',
+            'kpiConfig',
+            'totalReports',
+            'avgVisits',
+            'avgCaptures',
+            'weeklyTrend',
+            'today'
+        ));
+    }
+
+    /**
+     * Mapa de visitas del equipo (semana actual).
+     */
+    public function visitsMap()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek   = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesores = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->where('is_active', true)
+            ->get();
+
+        $asesoresCount = $asesores->count();
+
+        // Colores únicos por asesor
+        $palette = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#14b8a6','#ec4899','#84cc16'];
+        $asesorColors = [];
+        foreach ($asesores as $i => $a) {
+            $asesorColors[$a->name] = $palette[$i % count($palette)];
+        }
+
+        $mapMarkers     = [];
+        $allVisitDetails = collect();
+        $uniqueClientsSet = [];
+        $totalVisits = 0;
+
+        foreach ($asesores as $asesor) {
+            $reports = DailyReport::where('user_id', $asesor->id)
+                ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+                ->get();
+
+            $totalVisits += $reports->sum('visits');
+
+            foreach ($reports as $report) {
+                if (!$report->visits_data) continue;
+                foreach ($report->visits_data as $v) {
+                    $detail = [
+                        'asesor_name'  => $asesor->name,
+                        'client_name'  => $v['client_name']  ?? '',
+                        'client_phone' => $v['client_phone'] ?? '',
+                        'address'      => $v['address']      ?? '',
+                        'latitude'     => $v['latitude']     ?? null,
+                        'longitude'    => $v['longitude']    ?? null,
+                        'date'         => $report->report_date->format('d/m/Y'),
+                    ];
+                    $allVisitDetails->push($detail);
+                    if (!empty($v['client_phone'])) $uniqueClientsSet[$v['client_phone']] = true;
+                    if (!empty($v['latitude']) && !empty($v['longitude'])) {
+                        $mapMarkers[] = array_merge($detail, ['lat' => $v['latitude'], 'lng' => $v['longitude']]);
+                    }
+                }
+            }
+        }
+
+        $geoVisits     = count($mapMarkers);
+        $uniqueClients = count($uniqueClientsSet);
+
+        return view('team-leader.visits-map', compact(
+            'startOfWeek', 'endOfWeek', 'totalVisits', 'geoVisits',
+            'uniqueClients', 'asesoresCount', 'mapMarkers',
+            'allVisitDetails', 'asesorColors'
+        ));
+    }
+
+    /**
+     * Exportar las visitas en formato CSV (Excel) para el Team Leader.
+     */
+    public function exportVisitsCsv(Request $request)
+    {
+        $user = Auth::user();
+        
+        $startDate = Carbon::parse($request->get('start_date', Carbon::today()->startOfWeek(Carbon::MONDAY)))->startOfDay();
+        $endDate = Carbon::parse($request->get('end_date', Carbon::today()->endOfWeek(Carbon::SUNDAY)))->endOfDay();
+
+        // Obtener asesores de mi equipo
+        $asesoresIds = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->pluck('id');
+
+        $reports = DailyReport::with('user')
+            ->whereIn('user_id', $asesoresIds)
+            ->whereBetween('report_date', [$startDate, $endDate])
+            ->orderBy('report_date', 'desc')
+            ->get();
+
+        $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($reports) {
+            $handle = fopen('php://output', 'w');
+            
+            // UTF-8 BOM para que Excel detecte acentos y eñes correctamente
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Encabezados
+            fputcsv($handle, [
+                'Fecha de Visita', 'Asesor', 'Nombre del Cliente', 'Celular del Cliente', 
+                'Dirección / Ubicación', 'Latitud', 'Longitud', 'Enlace Google Maps',
+                'Foto Respaldo Letrero',
+                'Otros KPIs del día (Letreros | Exclusivas | Cierres | Llamadas)'
+            ], ';');
+
+            foreach ($reports as $report) {
+                $photoUrls = [];
+                if (!empty($report->sign_image_path)) {
+                    $decoded = json_decode($report->sign_image_path, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        foreach ($decoded as $path) {
+                            $photoUrls[] = url($path);
+                        }
+                    } else {
+                        $photoUrls[] = url($report->sign_image_path);
+                    }
+                }
+                $photoUrl = !empty($photoUrls) ? implode(', ', $photoUrls) : 'N/A';
+                
+                if ($report->visits_data && is_array($report->visits_data) && count($report->visits_data) > 0) {
+                    foreach ($report->visits_data as $v) {
+                        $lat = $v['latitude'] ?? '';
+                        $lng = $v['longitude'] ?? '';
+                        $mapLink = ($lat && $lng) ? "https://www.google.com/maps/search/?api=1&query={$lat},{$lng}" : 'N/A';
+                        
+                        fputcsv($handle, [
+                            $report->report_date->format('Y-m-d'),
+                            $report->user->name,
+                            $v['client_name'] ?? 'N/A',
+                            $v['client_phone'] ?? 'N/A',
+                            $v['address'] ?? 'N/A',
+                            $lat,
+                            $lng,
+                            $mapLink,
+                            $photoUrl,
+                            "Letreros: {$report->sign_captures} | Exclusivas: {$report->exclusive_captures} | Cierres: {$report->closings} | Llamadas: {$report->calls_made}"
+                        ], ';');
+                    }
+                } else {
+                    // Si el reporte tiene conteo de visitas pero no datos GPS detallados (históricos)
+                    $visitsCount = $report->visits;
+                    if ($visitsCount > 0) {
+                        for ($i = 1; $i <= $visitsCount; $i++) {
+                            fputcsv($handle, [
+                                $report->report_date->format('Y-m-d'),
+                                $report->user->name,
+                                'Cliente Histórico ' . $i,
+                                'N/A',
+                                'Visita sin coordenadas GPS',
+                                '',
+                                '',
+                                'N/A',
+                                $photoUrl,
+                                "Letreros: {$report->sign_captures} | Exclusivas: {$report->exclusive_captures} | Cierres: {$report->closings} | Llamadas: {$report->calls_made}"
+                            ], ';');
+                        }
+                    }
+                }
+            }
+
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="reporte-visitas-equipo-' . $startDate->format('Ymd') . '-al-' . $endDate->format('Ymd') . '.csv"',
+        ]);
+
+        return $response;
+    }
+}
+
