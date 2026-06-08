@@ -154,5 +154,62 @@ class AsesorDashboardController extends Controller
             'uniqueClients', 'reportDays', 'mapMarkers', 'allVisitDetails'
         ));
     }
+
+    /**
+     * Historial de reportes del asesor (últimos 30 días).
+     */
+    public function history()
+    {
+        $user = Auth::user();
+        $history = DailyReport::where('user_id', $user->id)
+            ->orderBy('report_date', 'desc')
+            ->limit(30)
+            ->get();
+
+        return view('asesor.history', compact('user', 'history'));
+    }
+
+    /**
+     * Ranking de asesores del equipo.
+     */
+    public function ranking()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $teamAsesores = collect();
+        if ($user->team_id) {
+            $teamMembers = User::where('team_id', $user->team_id)
+                ->where('role', 'asesor')
+                ->where('is_active', true)
+                ->get();
+
+            $memberIds = $teamMembers->pluck('id');
+            $allTeamReports = DailyReport::whereIn('user_id', $memberIds)
+                ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+                ->get()
+                ->groupBy('user_id');
+
+            $teamAsesores = $teamMembers->map(function ($member) use ($allTeamReports) {
+                $reports = $allTeamReports->get($member->id, collect());
+
+                return (object) [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'visits' => $reports->sum('visits'),
+                    'sign_captures' => $reports->sum('sign_captures'),
+                    'exclusive_captures' => $reports->sum('exclusive_captures'),
+                    'total_captures' => $reports->sum('sign_captures') + $reports->sum('exclusive_captures'),
+                    'closings' => $reports->sum('closings'),
+                    'calls_made' => $reports->sum('calls_made'),
+                    'properties_in_system' => $reports->sum('properties_in_system'),
+                ];
+            })->sortByDesc('total_captures')->values();
+        }
+
+        return view('asesor.ranking', compact('user', 'teamAsesores', 'startOfWeek', 'endOfWeek'));
+    }
 }
 

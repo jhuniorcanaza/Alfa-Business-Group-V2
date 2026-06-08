@@ -56,6 +56,10 @@ Route::middleware(['auth', 'role:asesor'])->prefix('asesor')->group(function () 
         ->name('asesor.report.update');
     Route::get('/visits-map', [AsesorDashboardController::class, 'visitsMap'])
         ->name('asesor.visits-map');
+    Route::get('/history', [AsesorDashboardController::class, 'history'])
+        ->name('asesor.history');
+    Route::get('/ranking', [AsesorDashboardController::class, 'ranking'])
+        ->name('asesor.ranking');
 });
 
 /*

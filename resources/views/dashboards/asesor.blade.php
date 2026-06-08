@@ -19,13 +19,13 @@
                 </a>
                 
                 @if($teamAsesores->count() > 0)
-                    <a href="#ranking" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#181a26] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm">
+                    <a href="{{ route('asesor.ranking') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#181a26] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm">
                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                         Ver Ranking
                     </a>
                 @endif
 
-                <a href="#historial" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#181a26] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm">
+                <a href="{{ route('asesor.history') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#181a26] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm">
                     <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Ver Historial
                 </a>
@@ -187,135 +187,6 @@
                         </div>
                     @endforeach
                 </div>
-            </div>
-
-            {{-- 4. RANKING DEL EQUIPO --}}
-            @if($teamAsesores->count() > 0)
-                <div id="ranking" class="scroll-mt-20 bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 transition-all duration-300 hover:shadow-indigo-500/5">
-                    <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                        <div>
-                            <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span class="bg-indigo-500/10 text-indigo-500 p-1.5 rounded-lg text-sm">🏆</span> 
-                                Ranking del Equipo — Semana Actual
-                            </h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ranking basado en captaciones totales (Letrero + Exclusiva).</p>
-                        </div>
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                            {{ $teamAsesores->count() }} Integrantes
-                        </span>
-                    </div>
-
-                    <div class="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-800/60">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-[11px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-800/40 dark:text-gray-400 font-extrabold tracking-wider border-b border-gray-200/60 dark:border-gray-800/60">
-                                <tr>
-                                    <th scope="col" class="py-3.5 px-4 font-bold rounded-l-lg">Posición</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold">Asesor</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🏠 Visitas</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📋+📝 Captaciones</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🤝 Cierres</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📞 Llamadas</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center rounded-r-lg">💻 AlphaX</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/40">
-                                @foreach($teamAsesores as $index => $member)
-                                    <tr class="{{ $member->id === $user->id ? 'bg-indigo-500/5 dark:bg-indigo-500/10' : '' }} hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
-                                        <td class="py-4 px-4 font-medium text-gray-900 dark:text-white">
-                                            @if($index === 0)
-                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-500 text-xs font-bold">🥇</span>
-                                            @elseif($index === 1)
-                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300/20 text-slate-300 text-xs font-bold">🥈</span>
-                                            @elseif($index === 2)
-                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-700/20 text-amber-600 text-xs font-bold">🥉</span>
-                                            @else
-                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-500/10 text-gray-400 text-[10px] font-bold">#{{ $index + 1 }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="py-4 px-4 font-bold {{ $member->id === $user->id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-850 dark:text-gray-200' }}">
-                                            <div class="flex items-center gap-2">
-                                                {{ $member->name }}
-                                                @if($member->id === $user->id)
-                                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-500 text-white uppercase tracking-wider">Tú</span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->visits }}</td>
-                                        <td class="py-4 px-4 text-center">
-                                            <span class="inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold rounded-full bg-indigo-500/10 text-indigo-450 dark:text-indigo-400 border border-indigo-500/20">
-                                                {{ $member->total_captures }}
-                                            </span>
-                                        </td>
-                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->closings }}</td>
-                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->calls_made }}</td>
-                                        <td class="py-4 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $member->properties_in_system }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endif
-
-            {{-- 5. HISTORIAL DE REPORTES --}}
-            <div id="historial" class="scroll-mt-20 bg-white dark:bg-[#11131c] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800/60 p-6 transition-all duration-300 hover:shadow-indigo-500/5">
-                <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                    <div>
-                        <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="bg-indigo-500/10 text-indigo-500 p-1.5 rounded-lg text-sm">📅</span> 
-                            Mis Reportes Anteriores
-                        </h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Historial detallado de tu actividad diaria reportada en los últimos 30 días.</p>
-                    </div>
-                </div>
-
-                @if($history->count() > 0)
-                    <div class="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-800/60">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-[11px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-800/40 dark:text-gray-400 font-extrabold tracking-wider border-b border-gray-200/60 dark:border-gray-800/60">
-                                <tr>
-                                    <th scope="col" class="py-3.5 px-4 font-bold rounded-l-lg">Fecha</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🏠 Visitas</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📋 Letrero</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📝 Exclusiva</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">🤝 Cierres</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center">📞 Llamadas</th>
-                                    <th scope="col" class="py-3.5 px-4 font-bold text-center rounded-r-lg">💻 AlphaX</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800/40">
-                                @foreach($history as $report)
-                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
-                                        <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
-                                            {{ $report->report_date->format('d/m/Y') }}
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->visits }}</td>
-                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->sign_captures }}</td>
-                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->exclusive_captures }}</td>
-                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->closings }}</td>
-                                        <td class="py-3.5 px-4 text-center">
-                                            <div class="flex flex-col items-center justify-center">
-                                                <span class="font-bold text-gray-900 dark:text-white">{{ $report->calls_made }}</span>
-                                                @if($report->call_phone_number)
-                                                    <span class="block text-[10px] text-gray-400 mt-0.5 max-w-[120px] truncate" title="{{ $report->call_phone_number }}">
-                                                        📞 {{ $report->call_phone_number }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center text-gray-700 dark:text-gray-300 font-semibold">{{ $report->properties_in_system }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="text-center py-12 text-gray-400 bg-gray-50/50 dark:bg-gray-900/10 border border-dashed border-gray-200 dark:border-gray-800/60 rounded-xl">
-                        <span class="text-3xl block mb-2">📅</span>
-                        <p class="font-semibold text-sm">No tienes reportes anteriores</p>
-                        <p class="text-xs text-gray-500 mt-1">¡Registra tu primer reporte del día de hoy para iniciar tu historial!</p>
-                    </div>
-                @endif
             </div>
 
         </div>
