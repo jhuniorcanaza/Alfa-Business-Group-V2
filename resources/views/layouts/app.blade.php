@@ -149,21 +149,16 @@
                             <div class="space-y-1.5 pt-2">
                                 <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nuevo</span>
                                 <a href="{{ route('team-leader.visits-map') }}" 
-                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
-                                    <span class="flex items-center gap-2.5">
-                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                                        Mapa de visitas
-                                    </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                                    Mapa de visitas
                                 </a>
                                 <a href="{{ route('team-leader.letreros') }}" 
-                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.letreros') ? 'bg-white/10 text-white shadow-sm' : '' }}">
-                                    <span class="flex items-center gap-2.5">
-                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        Fotos de letreros
-                                    </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.letreros') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    Fotos de letreros
                                 </a>
+                            </div>
                         @elseif($role === 'director')
                             <!-- SECCIÓN GENERAL (DIRECTOR) -->
                             <div class="space-y-1.5">
@@ -199,20 +194,14 @@
                             <div class="space-y-1.5 pt-2">
                                 <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Evidencias</span>
                                 <a href="{{ route('director.visits-map') }}" 
-                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
-                                    <span class="flex items-center gap-2.5">
-                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                                        Mapa de visitas
-                                    </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724v-10.764a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                                    Mapa de visitas
                                 </a>
                                 <a href="{{ route('director.reports.index') }}" 
-                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.reports.index') ? 'bg-white/10 text-white shadow-sm' : '' }}">
-                                    <span class="flex items-center gap-2.5">
-                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        Fotos de letreros
-                                    </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.reports.index') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    Fotos de letreros
                                 </a>
                             </div>
 
