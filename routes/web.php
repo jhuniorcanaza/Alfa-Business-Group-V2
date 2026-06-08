@@ -100,6 +100,12 @@ Route::middleware(['auth', 'role:team_leader'])->prefix('team-leader')->group(fu
 Route::middleware(['auth', 'role:director'])->prefix('director')->group(function () {
     Route::get('/dashboard', [DirectorDashboardController::class, 'index'])
         ->name('director.dashboard');
+    Route::get('/oficinas', [DirectorDashboardController::class, 'oficinas'])
+        ->name('director.oficinas');
+    Route::get('/perfilado', [DirectorDashboardController::class, 'perfilado'])
+        ->name('director.perfilado');
+    Route::get('/ranking', [DirectorDashboardController::class, 'ranking'])
+        ->name('director.ranking');
     Route::get('/visits-map', [DirectorDashboardController::class, 'visitsMap'])
         ->name('director.visits-map');
     Route::get('/reports', [DirectorDashboardController::class, 'reportsIndex'])

@@ -12,9 +12,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DirectorDashboardController extends Controller
 {
-    public function index(Request $request)
+    private function getDates(Request $request)
     {
-        // 1. Filtrado de Fechas
         $filterType = $request->get('filter_type', 'semana'); // dia, semana, mes, custom
         $today = Carbon::today();
         $startDate = $today->copy()->startOfWeek(Carbon::MONDAY);
@@ -35,20 +34,21 @@ class DirectorDashboardController extends Controller
             }
         }
 
-        // Totales globales
+        return [$startDate, $endDate, $filterType, $today];
+    }
+
+    private function getDashboardData($startDate, $endDate)
+    {
         $totalAsesores = User::where('role', 'asesor')->where('is_active', true)->count();
         $totalTeamLeaders = User::where('role', 'team_leader')->where('is_active', true)->count();
         $totalOffices = Office::where('is_active', true)->count();
 
-        // Reportes en el rango seleccionado
         $reportsCount = DailyReport::whereBetween('report_date', [$startDate, $endDate])->count();
-        // Cuántos asesores activos no tienen reporte en el rango
         $asesoresConReporte = DailyReport::whereBetween('report_date', [$startDate, $endDate])
             ->distinct('user_id')
             ->count('user_id');
         $asesoresSinReporte = max(0, $totalAsesores - $asesoresConReporte);
 
-        // Acumulado global del rango
         $rangeReports = DailyReport::whereBetween('report_date', [$startDate, $endDate])->get();
         $reportsByUser = $rangeReports->groupBy('user_id');
 
@@ -61,7 +61,6 @@ class DirectorDashboardController extends Controller
             'properties_in_system' => $rangeReports->sum('properties_in_system'),
         ];
 
-        // Rendimiento por oficina
         $offices = Office::where('is_active', true)
             ->with(['users' => function ($q) {
                 $q->where('role', 'asesor')->where('is_active', true);
@@ -69,8 +68,6 @@ class DirectorDashboardController extends Controller
             ->get()
             ->map(function ($office) use ($reportsByUser) {
                 $asesorIds = $office->users->pluck('id');
-                
-                // Filtrar en memoria los reportes que pertenecen a los asesores de esta oficina
                 $officeVisits = 0;
                 $officeSign = 0;
                 $officeExclusive = 0;
@@ -100,7 +97,6 @@ class DirectorDashboardController extends Controller
                 return $office;
             });
 
-        // Ranking global de asesores - Eager load relationships to prevent N+1
         $asesoresList = User::where('role', 'asesor')
             ->where('is_active', true)
             ->with(['office', 'team'])
@@ -108,7 +104,6 @@ class DirectorDashboardController extends Controller
 
         $asesoresRanked = $asesoresList->map(function ($asesor) use ($reportsByUser) {
             $reports = $reportsByUser->get($asesor->id, collect());
-
             $totalCaptures = $reports->sum('sign_captures') + $reports->sum('exclusive_captures');
 
             return (object) [
@@ -135,29 +130,76 @@ class DirectorDashboardController extends Controller
             'properties_in_system' => $asesoresRanked->sortByDesc('properties_in_system')->values(),
         ];
 
-        // Perfilado: Identificar candidatos a Team Leader por desempeño sostenido
-        // Regla: Asesores con cierres acumulados altos, alta captación sostenida y promedio alto de visitas en el rango actual
         $candidatosTeamLeader = $asesoresRanked->filter(function ($a) {
             return $a->closings >= 2 && $a->total_captures >= 3 && $a->visits >= 5;
         })->sortByDesc('closings')->values();
 
-        $reportesToday = $reportsCount;
+        return [
+            'totalAsesores' => $totalAsesores,
+            'totalTeamLeaders' => $totalTeamLeaders,
+            'totalOffices' => $totalOffices,
+            'reportesToday' => $reportsCount,
+            'asesoresSinReporte' => $asesoresSinReporte,
+            'weeklyGlobal' => $weeklyGlobal,
+            'offices' => $offices,
+            'rankings' => $rankings,
+            'candidatosTeamLeader' => $candidatosTeamLeader,
+        ];
+    }
 
-        return view('dashboards.director', compact(
-            'totalAsesores',
-            'totalTeamLeaders',
-            'totalOffices',
-            'reportesToday',
-            'asesoresSinReporte',
-            'weeklyGlobal',
-            'offices',
-            'today',
-            'startDate',
-            'endDate',
-            'filterType',
-            'rankings',
-            'candidatosTeamLeader'
-        ));
+    public function index(Request $request)
+    {
+        list($startDate, $endDate, $filterType, $today) = $this->getDates($request);
+        $data = $this->getDashboardData($startDate, $endDate);
+
+        return view('dashboards.director', array_merge($data, [
+            'today' => $today,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+        ]));
+    }
+
+    public function oficinas(Request $request)
+    {
+        list($startDate, $endDate, $filterType, $today) = $this->getDates($request);
+        $data = $this->getDashboardData($startDate, $endDate);
+
+        return view('director.oficinas', [
+            'offices' => $data['offices'],
+            'today' => $today,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+        ]);
+    }
+
+    public function perfilado(Request $request)
+    {
+        list($startDate, $endDate, $filterType, $today) = $this->getDates($request);
+        $data = $this->getDashboardData($startDate, $endDate);
+
+        return view('director.perfilado', [
+            'candidatosTeamLeader' => $data['candidatosTeamLeader'],
+            'today' => $today,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+        ]);
+    }
+
+    public function ranking(Request $request)
+    {
+        list($startDate, $endDate, $filterType, $today) = $this->getDates($request);
+        $data = $this->getDashboardData($startDate, $endDate);
+
+        return view('director.ranking', [
+            'rankings' => $data['rankings'],
+            'today' => $today,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+        ]);
     }
 
     public function exportCsv(Request $request)
