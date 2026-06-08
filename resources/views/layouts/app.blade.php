@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,100 +17,250 @@
         <!-- ApexCharts CDN for Premium Interactive Visualizations -->
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+    <body class="font-sans antialiased text-gray-800 dark:text-gray-200">
+        @php
+            $role = Auth::check() ? Auth::user()->role : null;
+        @endphp
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+        <div class="min-h-screen flex bg-gray-100 dark:bg-[#0d0e15]">
+            <!-- SIDEBAR PARA TEAM LEADER Y DIRECTOR (DESKTOP) -->
+            @if(Auth::check() && in_array($role, ['team_leader', 'director']))
+                <aside class="hidden md:flex flex-col w-64 bg-[#11131c] border-r border-gray-800/40 h-screen sticky top-0 p-5 shrink-0 select-none text-gray-400">
+                    <!-- Sidebar Header / Logo -->
+                    <div class="flex items-center gap-2 mb-8 px-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                            <span class="text-white text-base">☋</span>
+                        </div>
+                        <span class="font-bold text-white text-sm tracking-wide">Alfa Business</span>
                     </div>
-                </header>
-            @endisset
 
-            <!-- Page Content -->
-            <main class="flex-1">
-                {{ $slot }}
-            </main>
+                    <!-- Sidebar Scroll Container -->
+                    <div class="flex-1 overflow-y-auto space-y-6 pr-1 custom-scrollbar">
+                        @if($role === 'team_leader')
+                            <!-- SECCIÓN MONITOREO (TEAM LEADER) -->
+                            <div class="space-y-1.5">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Monitoreo</span>
+                                <a href="{{ route('team-leader.dashboard') }}" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.dashboard') && !request()->routeIs('team-leader.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="opacity-70 text-sm">▢</span> Dashboard equipo
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#asesores" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Mis asesores
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#semaforos" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Semáforos
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#ranking" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Ranking
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#alertas" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Alertas
+                                </a>
+                            </div>
 
-            <!-- Footer (Pie de página completo) -->
-            <footer class="bg-white dark:bg-gray-800 border-t border-gray-250 dark:border-gray-700 py-10 mt-16 print:hidden">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-gray-150 dark:border-gray-700/50">
-                        <!-- Columna 1: Enlaces Rápidos -->
-                        <div>
-                            <h4 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Enlaces del Sistema</h4>
-                            @auth
-                                @php
-                                    $role = Auth::user()->role;
-                                    $dashRoute = match($role) {
-                                        'director' => 'director.dashboard',
-                                        'team_leader' => 'team-leader.dashboard',
-                                        'asesor' => 'asesor.dashboard',
-                                        default => 'login',
-                                    };
-                                @endphp
-                                <ul class="space-y-2.5 text-xs">
-                                    <li>
-                                        <a href="{{ route($dashRoute) }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">📊 Dashboard Principal</a>
-                                    </li>
-                                    @if($role === 'asesor')
-                                        @php
-                                            $todayReport = \App\Models\DailyReport::where('user_id', Auth::id())
-                                                ->where('report_date', \Carbon\Carbon::today())
-                                                ->first();
-                                            $reportRoute = $todayReport ? 'asesor.report.edit' : 'asesor.report.create';
-                                        @endphp
+                            <!-- SECCIÓN REPORTES (TEAM LEADER) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Reportes</span>
+                                <a href="{{ route('team-leader.dashboard') }}#historial" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Historial diario
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#acumulado" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Acumulado semanal
+                                </a>
+                            </div>
+
+                            <!-- SECCIÓN NUEVO (TEAM LEADER) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nuevo</span>
+                                <a href="{{ route('team-leader.visits-map') }}" 
+                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('team-leader.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="opacity-70 text-sm">▢</span> Mapa de visitas
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                </a>
+                                <a href="{{ route('team-leader.dashboard') }}#letreros" 
+                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="opacity-70 text-sm">▢</span> Fotos de letreros
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                </a>
+                            </div>
+                        @elseif($role === 'director')
+                            <!-- SECCIÓN GENERAL (DIRECTOR) -->
+                            <div class="space-y-1.5">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">General</span>
+                                <a href="{{ route('director.dashboard') }}" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.dashboard') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="opacity-70 text-sm">▢</span> Panel directivo
+                                </a>
+                                <a href="{{ route('director.dashboard') }}#oficinas" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Por oficina
+                                </a>
+                                <a href="{{ route('director.dashboard') }}#rendimiento" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Rendimiento red
+                                </a>
+                            </div>
+
+                            <!-- SECCIÓN ASESORES (DIRECTOR) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Asesores</span>
+                                <a href="{{ route('director.dashboard') }}#asesores" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Todos los asesores
+                                </a>
+                                <a href="{{ route('director.dashboard') }}#ranking" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Ranking global
+                                </a>
+                                <a href="{{ route('director.dashboard') }}#semaforos" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Semáforos
+                                </a>
+                            </div>
+
+                            <!-- SECCIÓN EVIDENCIAS (DIRECTOR) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Evidencias</span>
+                                <a href="{{ route('director.visits-map') }}" 
+                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.visits-map') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="opacity-70 text-sm">▢</span> Mapa de visitas
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                </a>
+                                <a href="{{ route('director.reports.index') }}" 
+                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.reports.index') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="opacity-70 text-sm">▢</span> Fotos de letreros
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">nuevo</span>
+                                </a>
+                            </div>
+
+                            <!-- SECCIÓN ADMINISTRACIÓN (DIRECTOR) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Administración</span>
+                                <a href="{{ route('director.users.index') }}" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.users.index') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="opacity-70 text-sm">▢</span> Gestión usuarios
+                                </a>
+                                <a href="{{ route('director.kpis.index') }}" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('director.kpis.index') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="opacity-70 text-sm">▢</span> Configurar KPIs
+                                </a>
+                                <a href="{{ route('director.dashboard') }}#exportar" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5">
+                                    <span class="opacity-70 text-sm">▢</span> Exportar reportes
+                                </a>
+                            </div>
+
+                            <!-- SECCIÓN SISTEMA (DIRECTOR) -->
+                            <div class="space-y-1.5 pt-2">
+                                <span class="block px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sistema</span>
+                                <a href="{{ route('profile.edit') }}" 
+                                   class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:text-white hover:bg-white/5 {{ request()->routeIs('profile.edit') ? 'bg-white/10 text-white shadow-sm' : '' }}">
+                                    <span class="opacity-70 text-sm">▢</span> Configuración
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </aside>
+            @endif
+
+            <!-- CONTENEDOR DE CONTENIDO PRINCIPAL -->
+            <div class="flex-1 flex flex-col min-w-0">
+                @include('layouts.navigation')
+
+                <!-- Page Heading -->
+                @isset($header)
+                    <header class="bg-white dark:bg-[#11131c] border-b border-gray-200 dark:border-gray-800/60 shadow-sm print:hidden">
+                        <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
+
+                <!-- Page Content -->
+                <main class="flex-1">
+                    {{ $slot }}
+                </main>
+
+                <!-- Footer -->
+                <footer class="bg-white dark:bg-[#11131c] border-t border-gray-200 dark:border-gray-800/60 py-8 mt-12 print:hidden text-gray-500">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-gray-200 dark:border-gray-800/60 text-xs">
+                            <!-- Enlaces Rápidos -->
+                            <div>
+                                <h4 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Enlaces del Sistema</h4>
+                                @auth
+                                    @php
+                                        $dashRoute = match($role) {
+                                            'director' => 'director.dashboard',
+                                            'team_leader' => 'team-leader.dashboard',
+                                            'asesor' => 'asesor.dashboard',
+                                            default => 'login',
+                                        };
+                                    @endphp
+                                    <ul class="space-y-2">
                                         <li>
-                                            <a href="{{ route($reportRoute) }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">📝 {{ $todayReport ? 'Actualizar Reporte' : 'Enviar Reporte' }}</a>
+                                            <a href="{{ route($dashRoute) }}" class="hover:text-blue-500 transition-colors">📊 Dashboard Principal</a>
                                         </li>
-                                    @endif
+                                        @if($role === 'asesor')
+                                            <li>
+                                                <a href="{{ route($reportRoute) }}" class="hover:text-blue-500 transition-colors">📝 {{ $todayReport ? 'Actualizar Reporte' : 'Enviar Reporte' }}</a>
+                                            </li>
+                                        @endif
+                                        <li>
+                                            <a href="{{ route('profile.edit') }}" class="hover:text-blue-500 transition-colors">👤 Mi Perfil</a>
+                                        </li>
+                                    </ul>
+                                @endauth
+                            </div>
+
+                            <!-- Soporte y Legal -->
+                            <div>
+                                <h4 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Soporte y Legalidad</h4>
+                                <ul class="space-y-2">
                                     <li>
-                                        <a href="{{ route('profile.edit') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">👤 Mi Perfil de Usuario</a>
+                                        <a href="{{ route('privacy-policy') }}" class="hover:text-blue-500 transition-colors">🔒 Política de Privacidad</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('terms') }}" class="hover:text-blue-500 transition-colors">📄 Términos y Condiciones</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('faq') }}" class="hover:text-blue-500 transition-colors">❓ Preguntas Frecuentes</a>
                                     </li>
                                 </ul>
-                            @endauth
-                        </div>
+                            </div>
 
-                        <!-- Columna 2: Soporte y Legal -->
-                        <div>
-                            <h4 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Soporte y Legalidad</h4>
-                            <ul class="space-y-2.5 text-xs">
-                                @auth
-                                    <li>
-                                        <a href="{{ route('privacy-policy') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">🔒 Política de Privacidad</a>
-                                    </li>
-                                @endauth
-                                <li>
-                                    <a href="{{ route('terms') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">📄 Términos y Condiciones de Uso</a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('faq') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">❓ Preguntas Frecuentes</a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Columna 3: Información de Soporte -->
-                        <div>
-                            <h4 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Soporte Técnico</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
-                                Si experimentas inconvenientes técnicos o necesitas soporte con el mapa de geolocalización o la carga de imágenes, contacta al administrador.
-                            </p>
-                            <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                            <!-- Soporte Técnico -->
+                            <div>
+                                <h4 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Soporte Técnico</h4>
+                                <p class="leading-relaxed mb-3">
+                                    Si experimentas inconvenientes técnicos o necesitas soporte con el mapa de geolocalización o la carga de imágenes, contacta al administrador.
+                                </p>
                                 <p>📧 <strong>Email:</strong> soporte@alfabolivia.com</p>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Fila inferior: Derechos de autor -->
-                    <div class="flex flex-col sm:flex-row items-center justify-between pt-6 text-xs text-gray-500 dark:text-gray-400">
-                        <p>© {{ date('Y') }} Alfa Business Group. Todos los derechos reservados.</p>
-                        <p class="mt-2 sm:mt-0 text-[10px] text-gray-400 dark:text-gray-500">Sistema de Reporte Diario v2.4 · Optimizado para Bolivia</p>
+                        <!-- Fila inferior: Derechos de autor -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between pt-6 text-[10px]">
+                            <p>© {{ date('Y') }} Alfa Business Group. Todos los derechos reservados.</p>
+                            <p class="mt-2 sm:mt-0">Sistema de Reporte Diario v2.5 · Optimizado para Bolivia</p>
+                        </div>
                     </div>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </div>
 
         @auth
@@ -118,7 +268,6 @@
             <div class="block sm:hidden fixed bottom-4 left-4 right-4 z-50 print:hidden">
                 <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 py-2.5 px-3 flex items-center justify-around gap-1">
                     @php
-                        $role = Auth::user()->role;
                         $dashRoute = match($role) {
                             'director' => 'director.dashboard',
                             'team_leader' => 'team-leader.dashboard',
@@ -128,33 +277,26 @@
                     @endphp
 
                     <!-- Enlace Dashboard -->
-                    <a href="{{ route($dashRoute) }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('*.dashboard') ? 'text-blue-600 dark:text-blue-400 font-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    <a href="{{ route($dashRoute) }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('*.dashboard') ? 'text-indigo-500 font-black' : 'text-gray-500 dark:text-gray-400' }}">
                         <span class="text-xl">📊</span>
                         <span class="text-[10px] tracking-tight">Dashboard</span>
                     </a>
 
                     <!-- Enlace Acción Principal (Reportar para Asesor, o Gestión para Director) -->
                     @if($role === 'asesor')
-                        @php
-                            $todayReport = \App\Models\DailyReport::where('user_id', Auth::id())
-                                ->where('report_date', \Carbon\Carbon::today())
-                                ->first();
-                            $reportRoute = $todayReport ? 'asesor.report.edit' : 'asesor.report.create';
-                            $isActiveReport = request()->routeIs('asesor.report.create') || request()->routeIs('asesor.report.edit');
-                        @endphp
-                        <a href="{{ route($reportRoute) }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ $isActiveReport ? 'text-blue-600 dark:text-blue-400 font-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                        <a href="{{ route($reportRoute) }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ $isActiveReport ? 'text-indigo-500 font-black' : 'text-gray-500 dark:text-gray-400' }}">
                             <span class="text-xl">📝</span>
                             <span class="text-[10px] tracking-tight">{{ $todayReport ? 'Editar' : 'Reportar' }}</span>
                         </a>
                     @elseif($role === 'director')
-                        <a href="{{ route('director.users.index') }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('director.users.*') ? 'text-blue-600 dark:text-blue-400 font-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                        <a href="{{ route('director.users.index') }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('director.users.*') ? 'text-indigo-500 font-black' : 'text-gray-500 dark:text-gray-400' }}">
                             <span class="text-xl">👥</span>
                             <span class="text-[10px] tracking-tight">Usuarios</span>
                         </a>
                     @endif
 
                     <!-- Enlace Mi Perfil -->
-                    <a href="{{ route('profile.edit') }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('profile.edit') ? 'text-blue-600 dark:text-blue-400 font-black' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}">
+                    <a href="{{ route('profile.edit') }}" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 flex-1 {{ request()->routeIs('profile.edit') ? 'text-indigo-500 font-black' : 'text-gray-500 dark:text-gray-400' }}">
                         <span class="text-xl">👤</span>
                         <span class="text-[10px] tracking-tight">Perfil</span>
                     </a>
@@ -162,7 +304,7 @@
                     <!-- Botón Cerrar Sesión Rápido -->
                     <form method="POST" action="{{ route('logout') }}" class="flex-1 flex justify-center">
                         @csrf
-                        <button type="submit" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                        <button type="submit" class="flex flex-col items-center gap-0.5 text-center transition-all active:scale-95 text-red-500">
                             <span class="text-xl">🚪</span>
                             <span class="text-[10px] tracking-tight">Salir</span>
                         </button>
@@ -179,7 +321,7 @@
         <!-- ========================================== -->
         @auth
             <!-- Botón Flotante Circular -->
-            <button id="chatbotToggleBtn" onclick="toggleChatbot()" class="fixed bottom-24 right-6 sm:bottom-6 sm:right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer group print:hidden">
+            <button id="chatbotToggleBtn" onclick="toggleChatbot()" class="fixed bottom-24 right-6 sm:bottom-6 sm:right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer group print:hidden">
                 <span class="text-2xl group-hover:rotate-12 transition-transform duration-300">🤖</span>
                 <span class="absolute -top-1 -right-1 flex h-4 w-4">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -188,9 +330,9 @@
             </button>
 
             <!-- Burbuja de Chat Flotante -->
-            <div id="chatbotContainer" class="fixed bottom-40 right-6 sm:bottom-24 sm:right-6 w-[380px] h-[520px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-12rem)] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden hidden transition-all duration-300 transform scale-95 opacity-0 origin-bottom-right print:hidden">
+            <div id="chatbotContainer" class="fixed bottom-40 right-6 sm:bottom-24 sm:right-6 w-[380px] h-[520px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-12rem)] bg-white dark:bg-[#11131c] rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 z-50 flex flex-col overflow-hidden hidden transition-all duration-300 transform scale-95 opacity-0 origin-bottom-right print:hidden">
                 <!-- Cabecera del Chatbot -->
-                <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
+                <div class="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
                             🤖
@@ -199,7 +341,7 @@
                             <h4 class="font-bold text-sm tracking-wide">Alfa AI</h4>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                                <span class="text-xs text-blue-100 font-semibold">En línea · Asistente Inmobiliario</span>
+                                <span class="text-xs text-indigo-100 font-semibold">En línea · Asistente Inmobiliario</span>
                             </div>
                         </div>
                     </div>
@@ -210,20 +352,19 @@
 
                 <!-- Historial de Conversación -->
                 <div id="chatbotMessages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 dark:bg-gray-900/30">
-                    <!-- Mensaje de bienvenida inicial -->
                     <div class="flex gap-2.5 max-w-[85%]">
                         <div class="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-sm shrink-0">
                             🤖
                         </div>
-                        <div class="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-none shadow-sm">
+                        <div class="p-3 bg-white dark:bg-[#181a26] border border-gray-150 dark:border-gray-800 rounded-2xl rounded-tl-none shadow-sm">
                             <p class="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                                 ¡Hola <strong>{{ Auth::user()->name }}</strong>! 👋 Soy tu asistente inteligente Alfa AI. 
                             </p>
-                            @if(Auth::user()->role === 'asesor')
+                            @if($role === 'asesor')
                                 <p class="text-xs text-gray-800 dark:text-gray-200 leading-relaxed mt-1.5">
                                     ¿Quieres saber cuántas captaciones te faltan esta semana, o prefieres reportar tu actividad hablándome por nota de voz? 🎙️
                                 </p>
-                            @elseif(Auth::user()->role === 'team_leader')
+                            @elseif($role === 'team_leader')
                                 <p class="text-xs text-gray-800 dark:text-gray-200 leading-relaxed mt-1.5">
                                     Puedo decirte quién es el asesor estrella de tu equipo, quién falta reportar hoy o darte estadísticas rápidas.
                                 </p>
@@ -237,25 +378,20 @@
                 </div>
 
                 <!-- Campo de Entrada y Acciones -->
-                <div class="p-3 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center gap-2">
-                    <!-- Botón de Micrófono para Dictar Nota de Voz -->
-                    <button id="chatbotVoiceBtn" onclick="startSpeechRecognition()" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-red-50 dark:hover:bg-red-950/20 text-gray-500 hover:text-red-500 flex items-center justify-center transition-all cursor-pointer border border-gray-200 dark:border-gray-700 active:scale-95 shrink-0" title="Dictar por Voz (Nota de voz)">
+                <div class="p-3 border-t border-gray-200 dark:border-gray-850 bg-white dark:bg-[#11131c] flex items-center gap-2">
+                    <button id="chatbotVoiceBtn" onclick="startSpeechRecognition()" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/25 text-gray-500 hover:text-red-500 flex items-center justify-center transition-all cursor-pointer border border-gray-200 dark:border-gray-750 active:scale-95 shrink-0" title="Dictar por Voz">
                         <span class="text-lg" id="voiceBtnIcon">🎙️</span>
                     </button>
 
-                    <!-- Input de Texto -->
-                    <input type="text" id="chatbotInput" placeholder="Escribe o dicta un mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" onkeydown="handleChatbotKey(event)">
+                    <input type="text" id="chatbotInput" placeholder="Escribe o dicta un mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" onkeydown="handleChatbotKey(event)">
 
-                    <!-- Botón de Enviar -->
-                    <button onclick="sendChatbotMessage()" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-all cursor-pointer border border-blue-700 shadow-md shadow-blue-600/20 active:scale-95 shrink-0" title="Enviar Mensaje">
+                    <button onclick="sendChatbotMessage()" class="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center transition-all cursor-pointer border border-indigo-700 shadow-md shadow-indigo-600/20 active:scale-95 shrink-0" title="Enviar Mensaje">
                         <span class="text-lg">➔</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Estilos y Scripts del Chatbot -->
             <script>
-                // 1. Mostrar/Ocultar Chatbot
                 function toggleChatbot() {
                     const container = document.getElementById('chatbotContainer');
                     if (container.classList.contains('hidden')) {
@@ -273,14 +409,12 @@
                     }
                 }
 
-                // 2. Controlar la tecla Enter
                 function handleChatbotKey(event) {
                     if (event.key === 'Enter') {
                         sendChatbotMessage();
                     }
                 }
 
-                // 3. Enviar mensaje a través de Fetch API
                 function sendChatbotMessage() {
                     const input = document.getElementById('chatbotInput');
                     const text = input.value.trim();
@@ -289,8 +423,7 @@
                     input.value = '';
                     appendMessage('user', text);
 
-                    // Indicador de carga del bot
-                    const loadingId = appendMessage('bot', '<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce"></span><span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.2s"></span><span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.4s"></span></span>');
+                    const loadingId = appendMessage('bot', '<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce"></span><span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style="animation-delay: 0.2s"></span><span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style="animation-delay: 0.4s"></span></span>');
 
                     fetch("{{ route('chatbot.message') }}", {
                         method: 'POST',
@@ -315,15 +448,14 @@
                     });
                 }
 
-                // 4. Agregar mensaje al historial visual
                 function appendMessage(sender, content) {
                     const messagesContainer = document.getElementById('chatbotMessages');
                     const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                     
                     const isUser = (sender === 'user');
                     const bubbleClass = isUser 
-                        ? 'p-3 bg-blue-600 text-white rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed'
-                        : 'p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-800 dark:text-gray-200 leading-relaxed';
+                        ? 'p-3 bg-indigo-600 text-white rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed'
+                        : 'p-3 bg-white dark:bg-[#181a26] border border-gray-150 dark:border-gray-800 rounded-2xl rounded-tl-none shadow-sm text-xs text-gray-800 dark:text-gray-200 leading-relaxed';
 
                     const alignClass = isUser ? 'justify-end' : 'justify-start';
                     const avatarMarkup = isUser 
@@ -349,7 +481,6 @@
                     if (el) el.remove();
                 }
 
-                // 5. Integración de Notas de Voz (Web Speech API)
                 let recognition;
                 let isRecording = false;
 
@@ -369,20 +500,20 @@
                     }
 
                     recognition = new SpeechRecognition();
-                    recognition.lang = 'es-BO'; // Español de Bolivia
+                    recognition.lang = 'es-BO';
                     recognition.interimResults = false;
                     recognition.maxAlternatives = 1;
 
                     recognition.onstart = function() {
                         isRecording = true;
-                        voiceBtn.classList.remove('bg-gray-50', 'dark:bg-gray-700/50');
+                        voiceBtn.classList.remove('bg-gray-50', 'dark:bg-gray-800');
                         voiceBtn.classList.add('bg-red-500', 'text-white', 'animate-pulse');
                         voiceIcon.textContent = '🛑';
                     };
 
                     recognition.onend = function() {
                         isRecording = false;
-                        voiceBtn.classList.add('bg-gray-50', 'dark:bg-gray-700/50');
+                        voiceBtn.classList.add('bg-gray-50', 'dark:bg-gray-800');
                         voiceBtn.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
                         voiceIcon.textContent = '🎙️';
                     };
@@ -396,7 +527,6 @@
                         const input = document.getElementById('chatbotInput');
                         input.value = transcript;
                         
-                        // Enviar automáticamente el mensaje de voz dictado
                         setTimeout(() => {
                             sendChatbotMessage();
                         }, 500);
@@ -405,7 +535,6 @@
                     recognition.start();
                 }
 
-                // 6. Heartbeat para mantener la sesión y el token CSRF siempre activos de forma indefinida
                 setInterval(function() {
                     fetch("{{ route('ping') }}", {
                         method: 'GET',
@@ -420,8 +549,24 @@
                     .catch(error => {
                         console.log('Heartbeat: error de conexión.');
                     });
-                }, 15 * 60 * 1000); // Cada 15 minutos para evitar que la sesión o el token expiren
+                }, 15 * 60 * 1000);
             </script>
         @endauth
+
+        <style>
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 99px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+        </style>
     </body>
 </html>
