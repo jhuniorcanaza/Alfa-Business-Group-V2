@@ -70,6 +70,20 @@ Route::middleware(['auth', 'role:asesor'])->prefix('asesor')->group(function () 
 Route::middleware(['auth', 'role:team_leader'])->prefix('team-leader')->group(function () {
     Route::get('/dashboard', [TeamLeaderDashboardController::class, 'index'])
         ->name('team-leader.dashboard');
+    Route::get('/asesores', [TeamLeaderDashboardController::class, 'asesores'])
+        ->name('team-leader.asesores');
+    Route::get('/semaforos', [TeamLeaderDashboardController::class, 'semaforos'])
+        ->name('team-leader.semaforos');
+    Route::get('/ranking', [TeamLeaderDashboardController::class, 'ranking'])
+        ->name('team-leader.ranking');
+    Route::get('/alertas', [TeamLeaderDashboardController::class, 'alertas'])
+        ->name('team-leader.alertas');
+    Route::get('/historial', [TeamLeaderDashboardController::class, 'historial'])
+        ->name('team-leader.historial');
+    Route::get('/acumulado', [TeamLeaderDashboardController::class, 'acumulado'])
+        ->name('team-leader.acumulado');
+    Route::get('/letreros', [TeamLeaderDashboardController::class, 'letreros'])
+        ->name('team-leader.letreros');
     Route::get('/asesor/{asesor}', [TeamLeaderDashboardController::class, 'asesorDetail'])
         ->name('team-leader.asesor-detail');
     Route::get('/visits-map', [TeamLeaderDashboardController::class, 'visitsMap'])

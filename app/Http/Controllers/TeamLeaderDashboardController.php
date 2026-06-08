@@ -42,60 +42,8 @@ class TeamLeaderDashboardController extends Controller
                 break;
         }
 
-        // Asesores activos de mi equipo
-        $asesores = User::where('team_id', $user->team_id)
-            ->where('role', 'asesor')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-
-        // Reportes de hoy
-        $todayReports = DailyReport::whereIn('user_id', $asesores->pluck('id'))
-            ->where('report_date', $today)
-            ->get()
-            ->keyBy('user_id');
-
-        // Reportes del rango agrupados por asesor
-        $weeklyReportsAll = DailyReport::whereIn('user_id', $asesores->pluck('id'))
-            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
-            ->get()
-            ->groupBy('user_id');
-
-        // Construir datos completos de cada asesor
-        $asesoresData = $asesores->map(function ($asesor) use ($todayReports, $weeklyReportsAll) {
-            $todayReport = $todayReports->get($asesor->id);
-            $weeklyReports = $weeklyReportsAll->get($asesor->id, collect());
-
-            return (object) [
-                'id' => $asesor->id,
-                'name' => $asesor->name,
-                'email' => $asesor->email,
-                'phone' => $asesor->phone,
-                'sent_today' => $todayReport !== null,
-                'today' => $todayReport ? [
-                    'visits' => $todayReport->visits,
-                    'sign_captures' => $todayReport->sign_captures,
-                    'exclusive_captures' => $todayReport->exclusive_captures,
-                    'closings' => $todayReport->closings,
-                    'calls_made' => $todayReport->calls_made,
-                    'call_phone_number' => $todayReport->call_phone_number,
-                    'properties_in_system' => $todayReport->properties_in_system,
-                    'source' => $todayReport->source,
-                    'created_at' => $todayReport->created_at,
-                    'sign_image_path' => $todayReport->sign_image_path,
-                ] : null,
-                'weekly' => [
-                    'visits' => $weeklyReports->sum('visits'),
-                    'sign_captures' => $weeklyReports->sum('sign_captures'),
-                    'exclusive_captures' => $weeklyReports->sum('exclusive_captures'),
-                    'closings' => $weeklyReports->sum('closings'),
-                    'calls_made' => $weeklyReports->sum('calls_made'),
-                    'properties_in_system' => $weeklyReports->sum('properties_in_system'),
-                ],
-                'total_captures' => $weeklyReports->sum('sign_captures') + $weeklyReports->sum('exclusive_captures'),
-                'reports_count' => $weeklyReports->count(),
-            ];
-        });
+        // Asesores activos de mi equipo con sus reportes y estadísticas
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
 
         // Configuración de semáforo
         $kpiConfig = KpiConfig::where('indicator', 'captaciones')
@@ -405,6 +353,201 @@ class TeamLeaderDashboardController extends Controller
         ]);
 
         return $response;
+    }
+
+    /**
+     * Helper to get team advisers with daily/weekly statistics.
+     */
+    private function getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek)
+    {
+        $asesores = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $todayReports = DailyReport::whereIn('user_id', $asesores->pluck('id'))
+            ->where('report_date', $today)
+            ->get()
+            ->keyBy('user_id');
+
+        $weeklyReportsAll = DailyReport::whereIn('user_id', $asesores->pluck('id'))
+            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+            ->get()
+            ->groupBy('user_id');
+
+        return $asesores->map(function ($asesor) use ($todayReports, $weeklyReportsAll) {
+            $todayReport = $todayReports->get($asesor->id);
+            $weeklyReports = $weeklyReportsAll->get($asesor->id, collect());
+
+            return (object) [
+                'id' => $asesor->id,
+                'name' => $asesor->name,
+                'email' => $asesor->email,
+                'phone' => $asesor->phone,
+                'sent_today' => $todayReport !== null,
+                'today' => $todayReport ? [
+                    'visits' => $todayReport->visits,
+                    'sign_captures' => $todayReport->sign_captures,
+                    'exclusive_captures' => $todayReport->exclusive_captures,
+                    'closings' => $todayReport->closings,
+                    'calls_made' => $todayReport->calls_made,
+                    'call_phone_number' => $todayReport->call_phone_number,
+                    'properties_in_system' => $todayReport->properties_in_system,
+                    'source' => $todayReport->source,
+                    'created_at' => $todayReport->created_at,
+                    'sign_image_path' => $todayReport->sign_image_path,
+                ] : null,
+                'weekly' => [
+                    'visits' => $weeklyReports->sum('visits'),
+                    'sign_captures' => $weeklyReports->sum('sign_captures'),
+                    'exclusive_captures' => $weeklyReports->sum('exclusive_captures'),
+                    'closings' => $weeklyReports->sum('closings'),
+                    'calls_made' => $weeklyReports->sum('calls_made'),
+                    'properties_in_system' => $weeklyReports->sum('properties_in_system'),
+                ],
+                'total_captures' => $weeklyReports->sum('sign_captures') + $weeklyReports->sum('exclusive_captures'),
+                'reports_count' => $weeklyReports->count(),
+            ];
+        });
+    }
+
+    /**
+     * Mis Asesores page.
+     */
+    public function asesores()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+
+        return view('team-leader.asesores', compact('user', 'asesoresData'));
+    }
+
+    /**
+     * Semáforos page.
+     */
+    public function semaforos()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+
+        $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('is_active', true)
+            ->first();
+
+        return view('team-leader.semaforos', compact('user', 'asesoresData', 'kpiConfig'));
+    }
+
+    /**
+     * Ranking page.
+     */
+    public function ranking()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+
+        $rankings = [
+            'visits' => $asesoresData->sortByDesc('weekly.visits')->values(),
+            'sign_captures' => $asesoresData->sortByDesc('weekly.sign_captures')->values(),
+            'exclusive_captures' => $asesoresData->sortByDesc('weekly.exclusive_captures')->values(),
+            'closings' => $asesoresData->sortByDesc('weekly.closings')->values(),
+            'calls_made' => $asesoresData->sortByDesc('weekly.calls_made')->values(),
+            'properties_in_system' => $asesoresData->sortByDesc('weekly.properties_in_system')->values(),
+        ];
+
+        return view('team-leader.ranking', compact('user', 'rankings', 'startOfWeek', 'endOfWeek'));
+    }
+
+    /**
+     * Alertas page.
+     */
+    public function alertas()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+        $missingReports = $asesoresData->where('sent_today', false);
+
+        return view('team-leader.alertas', compact('user', 'missingReports', 'today'));
+    }
+
+    /**
+     * Historial diario (KPIs del día).
+     */
+    public function historial()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+
+        return view('team-leader.historial', compact('user', 'asesoresData', 'today'));
+    }
+
+    /**
+     * Acumulado semanal page.
+     */
+    public function acumulado()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
+
+        $teamWeekly = [
+            'visits' => $asesoresData->sum('weekly.visits'),
+            'sign_captures' => $asesoresData->sum('weekly.sign_captures'),
+            'exclusive_captures' => $asesoresData->sum('weekly.exclusive_captures'),
+            'closings' => $asesoresData->sum('weekly.closings'),
+            'calls_made' => $asesoresData->sum('weekly.calls_made'),
+            'properties_in_system' => $asesoresData->sum('weekly.properties_in_system'),
+        ];
+
+        return view('team-leader.acumulado', compact('user', 'teamWeekly', 'startOfWeek', 'endOfWeek'));
+    }
+
+    /**
+     * Fotos de letreros page.
+     */
+    public function letreros()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        $startOfWeek = $today->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $asesores = User::where('team_id', $user->team_id)
+            ->where('role', 'asesor')
+            ->where('is_active', true)
+            ->get();
+
+        // Obtener todos los reportes de la semana con fotos de letrero
+        $reportsWithPhotos = DailyReport::whereIn('user_id', $asesores->pluck('id'))
+            ->whereBetween('report_date', [$startOfWeek, $endOfWeek])
+            ->whereNotNull('sign_image_path')
+            ->orderBy('report_date', 'desc')
+            ->get();
+
+        return view('team-leader.letreros', compact('user', 'reportsWithPhotos', 'startOfWeek', 'endOfWeek'));
     }
 }
 
