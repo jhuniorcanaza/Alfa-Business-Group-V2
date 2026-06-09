@@ -10,7 +10,10 @@
     </x-slot>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <style>#global-map{height:550px;border-radius:1rem;z-index:1;}</style>
+    <style>
+        #global-map { height: 350px; border-radius: 1rem; z-index: 1; }
+        @media (min-width: 768px) { #global-map { height: 550px; } }
+    </style>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -75,14 +78,14 @@
                     </div>
 
                     @if($filterType === 'custom')
-                        <div class="flex items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-700/50">
-                            <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                            <div class="w-full sm:w-auto">
                                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Desde</label>
-                                <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                                <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full sm:w-auto rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                             </div>
-                            <div>
+                            <div class="w-full sm:w-auto">
                                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Hasta</label>
-                                <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                                <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full sm:w-auto rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                             </div>
                         </div>
                     @endif
