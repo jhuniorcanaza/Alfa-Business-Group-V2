@@ -18,7 +18,10 @@
         </button>
         
         <!-- Brand on mobile, Page title on desktop -->
-        <span class="md:hidden font-bold text-white text-sm tracking-wide">Alfa Business</span>
+        <div class="md:hidden flex items-center gap-2">
+            <img src="{{ asset('images/logo.png') }}" alt="Alfa Logo" class="w-6 h-6 object-contain rounded-md">
+            <span class="font-bold text-white text-sm tracking-wide">Alfa Business</span>
+        </div>
         <span class="hidden md:inline text-xs font-semibold text-gray-400 uppercase tracking-widest">
             {{ match($role) {
                 'director' => 'Panel Directivo Principal',
@@ -35,6 +38,11 @@
         <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border {{ $roleBadge['class'] }}">
             {{ $roleBadge['label'] }}
         </span>
+
+        <!-- Dark/Light Theme Toggle Button -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all select-none active:scale-95 cursor-pointer" title="Cambiar Tema">
+            <span id="themeToggleIcon">🌙</span>
+        </button>
 
         <!-- Dropdown -->
         <x-dropdown align="right" width="48">
@@ -62,3 +70,32 @@
         </x-dropdown>
     </div>
 </nav>
+
+<script>
+    function updateThemeUI() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const iconEl = document.getElementById('themeToggleIcon');
+        if (iconEl) {
+            iconEl.textContent = isDark ? '☀️' : '🌙';
+        }
+        const btnEl = document.getElementById('themeToggleBtn');
+        if (btnEl) {
+            btnEl.title = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        }
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+        updateThemeUI();
+    }
+
+    // Call update immediately on load
+    updateThemeUI();
+</script>

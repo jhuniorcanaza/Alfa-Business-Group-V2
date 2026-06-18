@@ -92,10 +92,10 @@
                                 <input type="number" name="sign_captures" id="sign_captures" required min="0" value="{{ old('sign_captures', 0) }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-lg font-bold">
                             </div>
-                            <div class="flex md:hidden items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800">
-                                <button type="button" onclick="dec('sign_captures_m','sign_captures')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
-                                <input type="number" id="sign_captures_m" readonly value="{{ old('sign_captures', 0) }}" class="flex-1 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="inc('sign_captures_m','sign_captures')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
+                            <div class="flex md:hidden items-center justify-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800 max-w-xs mx-auto w-full">
+                                <button type="button" onclick="dec('sign_captures_m','sign_captures')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
+                                <input type="text" id="sign_captures_m" readonly value="{{ old('sign_captures', 0) }}" class="w-16 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="inc('sign_captures_m','sign_captures')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
                             </div>
                         </div>
 
@@ -118,10 +118,10 @@
                                 <input type="number" name="exclusive_captures" id="exclusive_captures" required min="0" value="{{ old('exclusive_captures', 0) }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-lg font-bold">
                             </div>
-                            <div class="flex md:hidden items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800">
-                                <button type="button" onclick="dec('exclusive_captures_m','exclusive_captures')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
-                                <input type="number" id="exclusive_captures_m" readonly value="{{ old('exclusive_captures', 0) }}" class="flex-1 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="inc('exclusive_captures_m','exclusive_captures')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
+                            <div class="flex md:hidden items-center justify-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800 max-w-xs mx-auto w-full">
+                                <button type="button" onclick="dec('exclusive_captures_m','exclusive_captures')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
+                                <input type="text" id="exclusive_captures_m" readonly value="{{ old('exclusive_captures', 0) }}" class="w-16 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="inc('exclusive_captures_m','exclusive_captures')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
                             </div>
                         </div>
 
@@ -135,10 +135,10 @@
                                 <input type="number" name="closings" id="closings" required min="0" value="{{ old('closings', 0) }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-lg font-bold">
                             </div>
-                            <div class="flex md:hidden items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800">
-                                <button type="button" onclick="dec('closings_m','closings')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
-                                <input type="number" id="closings_m" readonly value="{{ old('closings', 0) }}" class="flex-1 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="inc('closings_m','closings')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
+                            <div class="flex md:hidden items-center justify-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800 max-w-xs mx-auto w-full">
+                                <button type="button" onclick="dec('closings_m','closings')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
+                                <input type="text" id="closings_m" readonly value="{{ old('closings', 0) }}" class="w-16 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="inc('closings_m','closings')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
                             </div>
                         </div>
 
@@ -152,15 +152,15 @@
                                 <input type="number" name="calls_made" id="calls_made" required min="0" value="{{ old('calls_made', 0) }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-lg font-bold">
                             </div>
-                            <div class="flex md:hidden items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800">
-                                <button type="button" onclick="dec('calls_made_m','calls_made')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
-                                <input type="number" id="calls_made_m" readonly value="{{ old('calls_made', 0) }}" class="flex-1 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="inc('calls_made_m','calls_made')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
+                            <div class="flex md:hidden items-center justify-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800 max-w-xs mx-auto w-full">
+                                <button type="button" onclick="dec('calls_made_m','calls_made')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-250 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
+                                <input type="text" id="calls_made_m" readonly value="{{ old('calls_made', 0) }}" class="w-16 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="inc('calls_made_m','calls_made')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
                             </div>
                         </div>
                         <div id="phone-fields-container" class="space-y-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 hidden">
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">📞 Números Llamados</h4>
-                            <div id="phone-inputs-list" class="space-y-2"></div>
+                            <div id="phone-inputs-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                         </div>
 
                         {{-- ===== ALPHAX ===== --}}
@@ -173,10 +173,10 @@
                                 <input type="number" name="properties_in_system" id="properties_in_system" required min="0" value="{{ old('properties_in_system', 0) }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-lg font-bold">
                             </div>
-                            <div class="flex md:hidden items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800">
-                                <button type="button" onclick="dec('properties_in_system_m','properties_in_system')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
-                                <input type="number" id="properties_in_system_m" readonly value="{{ old('properties_in_system', 0) }}" class="flex-1 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="inc('properties_in_system_m','properties_in_system')" class="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
+                            <div class="flex md:hidden items-center justify-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-800 max-w-xs mx-auto w-full">
+                                <button type="button" onclick="dec('properties_in_system_m','properties_in_system')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-gray-250 dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:scale-90 transition-all select-none">➖</button>
+                                <input type="text" id="properties_in_system_m" readonly value="{{ old('properties_in_system', 0) }}" class="w-16 text-center text-2xl font-black bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="inc('properties_in_system_m','properties_in_system')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 active:scale-90 transition-all select-none">➕</button>
                             </div>
                         </div>
 

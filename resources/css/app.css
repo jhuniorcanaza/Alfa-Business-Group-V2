@@ -1,3 +1,86 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Light Mode Overrides for Sidebar, Navbar, and specific widgets */
+html:not(.dark) aside {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+    color: #4b5563 !important;
+}
+
+html:not(.dark) aside span.tracking-wide {
+    color: #111827 !important;
+}
+
+html:not(.dark) aside a {
+    color: #4b5563 !important;
+}
+
+html:not(.dark) aside a:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+}
+
+/* Sidebar active link styling in light mode */
+html:not(.dark) aside a.bg-white\/10 {
+    background-color: #f3f4f6 !important;
+    color: #4f46e5 !important; /* Premium Indigo color for active text */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) aside a.bg-white\/10 svg {
+    color: #4f46e5 !important;
+}
+
+/* Navbar in light mode */
+html:not(.dark) nav {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #374151 !important;
+}
+
+html:not(.dark) nav span.tracking-wide {
+    color: #111827 !important;
+}
+
+html:not(.dark) nav button, 
+html:not(.dark) nav a {
+    color: #374151 !important;
+}
+
+html:not(.dark) nav button:hover, 
+html:not(.dark) nav a:hover {
+    background-color: #f9fafb !important;
+    color: #111827 !important;
+}
+
+/* Theme Toggle button in light mode */
+html:not(.dark) #themeToggleBtn {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #4b5563 !important;
+}
+
+html:not(.dark) #themeToggleBtn:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    color: #111827 !important;
+}
+
+/* Badge colors for Roles in light mode */
+html:not(.dark) nav span.border-amber-500\/30 {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    color: rgb(180, 83, 9) !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+html:not(.dark) nav span.border-purple-500\/30 {
+    background-color: rgba(168, 85, 247, 0.1) !important;
+    color: rgb(109, 40, 217) !important;
+    border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+html:not(.dark) nav span.border-blue-500\/30 {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    color: rgb(29, 78, 216) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+}

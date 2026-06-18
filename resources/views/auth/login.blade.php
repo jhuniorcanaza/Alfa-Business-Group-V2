@@ -6,6 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="Alfa Business Group - Sistema de Gestión Inmobiliaria Pre-CRM">
 
+        <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+
         <title>Alfa Business Group — Iniciar Sesión</title>
 
         <!-- Fonts -->
@@ -114,10 +116,8 @@
         <div class="relative z-10 w-full max-w-md fade-in">
             <!-- Logo y Marca -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 mb-4 shadow-lg shadow-blue-500/20">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
+                <div class="inline-flex items-center justify-center mb-4">
+                    <img src="{{ asset('images/logo.png') }}" alt="Alfa Logo" class="w-20 h-20 object-contain rounded-2xl drop-shadow-lg logo-glow">
                 </div>
                 <h1 class="text-2xl font-bold text-white logo-glow tracking-tight">Alfa Business Group</h1>
                 <p class="text-slate-400 text-sm mt-1">Sistema de Gestión Inmobiliaria</p>

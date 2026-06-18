@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
@@ -13,6 +15,18 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <script>
+            // Initialize theme immediately to prevent flashing
+            (function() {
+                const theme = localStorage.getItem('theme') || 'dark';
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
         
         <!-- ApexCharts CDN for Premium Interactive Visualizations -->
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -45,9 +59,7 @@
                 <aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:sticky top-0 left-0 z-50 md:z-auto flex flex-col w-64 bg-[#11131c] border-r border-gray-800/20 h-screen p-5 shrink-0 select-none text-gray-400 transition-transform duration-300 md:translate-x-0 md:flex">
                     <!-- Sidebar Header / Logo -->
                     <div class="flex items-center gap-2.5 mb-8 px-2">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                            <span class="text-white text-base">☋</span>
-                        </div>
+                        <img src="{{ asset('images/logo.png') }}" alt="Alfa Logo" class="w-8 h-8 object-contain rounded-lg">
                         <span class="font-bold text-white text-sm tracking-wide">Alfa Business</span>
                     </div>
 

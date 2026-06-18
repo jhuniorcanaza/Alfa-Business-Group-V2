@@ -208,7 +208,6 @@ class WhatsappWebhookController extends Controller
         }
     }
 
-
     /**
      * Enviar mensaje de WhatsApp vía Meta Cloud API.
      */
