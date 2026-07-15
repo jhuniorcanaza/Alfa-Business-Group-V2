@@ -211,7 +211,13 @@ class ChatbotController extends Controller
                 $excl = $weeklyReports->sum('exclusive_captures');
                 $total = $sign + $excl;
 
-                $kpiConfig = KpiConfig::where('indicator', 'captaciones')->where('is_active', true)->first();
+                $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+                    ->where('office_id', $user->office_id)
+                    ->where('is_active', true)
+                    ->first() ?? KpiConfig::where('indicator', 'captaciones')
+                    ->whereNull('office_id')
+                    ->where('is_active', true)
+                    ->first();
                 $goal = $kpiConfig ? $kpiConfig->weekly_goal : 10;
                 $missing = max(0, $goal - $total);
                 $trafficLight = $kpiConfig ? $kpiConfig->getTrafficLightColor($total) : 'green';
@@ -405,6 +411,10 @@ class ChatbotController extends Controller
 
             // Meta de captaciones
             $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+                ->where('office_id', $user->office_id)
+                ->where('is_active', true)
+                ->first() ?? KpiConfig::where('indicator', 'captaciones')
+                ->whereNull('office_id')
                 ->where('is_active', true)
                 ->first();
             $goal = $kpiConfig ? $kpiConfig->weekly_goal : 10;

@@ -114,13 +114,13 @@
 
             <!-- SECCIÓN GRÁFICOS INTERACTIVOS (APEXCHARTS) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Gráfico Comparativo de Oficinas -->
+                <!-- Gráfico Comparativo de Equipos -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
-                        <span>📊</span> Distribución de KPIs por Oficina de Bolivia
+                        <span>📊</span> Distribución de KPIs por Equipo de Trabajo
                     </h3>
-                    <p class="text-xs text-gray-400 mb-4">Comparativa visual del desempeño general de captaciones y cierres entre oficinas activas.</p>
-                    <div id="officesKpiChart" class="w-full"></div>
+                    <p class="text-xs text-gray-400 mb-4">Comparativa visual del desempeño general de captaciones y cierres por cada equipo comercial.</p>
+                    <div id="teamsKpiChart" class="w-full"></div>
                 </div>
 
                 <!-- Gráfico de Donut de Distribución de KPIs Globales -->
@@ -137,15 +137,15 @@
     </div>
 
     @php
-        $officesChartData = $offices->map(function($o) {
+        $teamsChartData = $teams->map(function($t) {
             return [
-                'name' => $o->name,
-                'visits' => $o->weekly['visits'],
-                'sign_captures' => $o->weekly['sign_captures'],
-                'exclusive_captures' => $o->weekly['exclusive_captures'],
-                'closings' => $o->weekly['closings'],
-                'calls_made' => $o->weekly['calls_made'],
-                'properties_in_system' => $o->weekly['properties_in_system']
+                'name' => $t->name . ($t->leader ? ' (' . $t->leader->name . ')' : ' (Sin Líd.)'),
+                'visits' => $t->weekly['visits'],
+                'sign_captures' => $t->weekly['sign_captures'],
+                'exclusive_captures' => $t->weekly['exclusive_captures'],
+                'closings' => $t->weekly['closings'],
+                'calls_made' => $t->weekly['calls_made'],
+                'properties_in_system' => $t->weekly['properties_in_system']
             ];
         });
     @endphp
@@ -153,18 +153,18 @@
     <!-- Script de Inicialización de ApexCharts con Datos de PHP -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Datos para el Gráfico Comparativo de Oficinas
-            const officesData = {!! json_encode($officesChartData) !!};
+            // 1. Datos para el Gráfico Comparativo de Equipos
+            const teamsData = {!! json_encode($teamsChartData) !!};
 
-            const officeCategories = officesData.map(o => o.name);
-            const seriesVisits = officesData.map(o => o.visits);
-            const seriesSign = officesData.map(o => o.sign_captures);
-            const seriesExclusive = officesData.map(o => o.exclusive_captures);
-            const seriesClosings = officesData.map(o => o.closings);
-            const seriesCalls = officesData.map(o => o.calls_made);
-            const seriesProperties = officesData.map(o => o.properties_in_system);
+            const teamCategories = teamsData.map(t => t.name);
+            const seriesVisits = teamsData.map(t => t.visits);
+            const seriesSign = teamsData.map(t => t.sign_captures);
+            const seriesExclusive = teamsData.map(t => t.exclusive_captures);
+            const seriesClosings = teamsData.map(t => t.closings);
+            const seriesCalls = teamsData.map(t => t.calls_made);
+            const seriesProperties = teamsData.map(t => t.properties_in_system);
 
-            const optionsOffices = {
+            const optionsTeams = {
                 chart: {
                     type: 'bar',
                     height: 320,
@@ -209,7 +209,7 @@
                     data: seriesProperties
                 }],
                 xaxis: {
-                    categories: officeCategories,
+                    categories: teamCategories,
                     labels: {
                         style: {
                             colors: '#6b7280',
@@ -247,8 +247,8 @@
                 }
             };
 
-            const chartOffices = new ApexCharts(document.querySelector("#officesKpiChart"), optionsOffices);
-            chartOffices.render();
+            const chartTeams = new ApexCharts(document.querySelector("#teamsKpiChart"), optionsTeams);
+            chartTeams.render();
 
 
             // 2. Datos para el Gráfico Donut de Mezcla de Productividad Global

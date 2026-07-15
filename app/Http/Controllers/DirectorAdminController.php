@@ -9,6 +9,7 @@ use App\Models\KpiConfig;
 use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
@@ -61,7 +62,7 @@ class DirectorAdminController extends Controller
     {
         $users = User::with(['office', 'team'])->get();
         $offices = Office::where('is_active', true)->get();
-        $teams = Team::where('is_active', true)->get();
+        $teams = Team::where('is_active', true)->with('leader')->get();
         return view('director.users.index', compact('users', 'offices', 'teams'));
     }
 
@@ -77,16 +78,40 @@ class DirectorAdminController extends Controller
             'team_id' => 'nullable|exists:teams,id',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'phone' => $request->phone,
-            'office_id' => $request->office_id,
-            'team_id' => $request->team_id,
-            'is_active' => true,
-        ]);
+        DB::transaction(function () use ($request) {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'phone' => $request->phone,
+                'office_id' => $request->office_id,
+                'team_id' => $request->team_id,
+                'is_active' => true,
+            ]);
+
+            // Sincronizar el líder de equipo si corresponde
+            if ($user->role === 'team_leader') {
+                if ($request->team_id) {
+                    // Desvincular este líder de cualquier otro equipo que pudiera tener asignado anteriormente
+                    Team::where('leader_id', $user->id)
+                        ->where('id', '!=', $request->team_id)
+                        ->update(['leader_id' => null]);
+
+                    $newTeam = Team::find($request->team_id);
+                    if ($newTeam) {
+                        // Si el equipo ya tenía otro líder, desvincular a ese líder anterior
+                        if ($newTeam->leader_id && $newTeam->leader_id != $user->id) {
+                            User::where('id', $newTeam->leader_id)->update(['team_id' => null]);
+                        }
+                        $newTeam->update(['leader_id' => $user->id]);
+                    }
+                } else {
+                    // Si no tiene equipo asignado, quitar este líder de cualquier equipo
+                    Team::where('leader_id', $user->id)->update(['leader_id' => null]);
+                }
+            }
+        });
 
         return redirect()->route('director.users.index')->with('success', 'Usuario creado exitosamente.');
     }
@@ -118,7 +143,37 @@ class DirectorAdminController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        $user->update($data);
+        DB::transaction(function () use ($request, $user, $data) {
+            $user->update($data);
+
+            // Si el usuario es desactivado, limpiar referencias de liderazgo de equipo
+            if (!$user->is_active) {
+                Team::where('leader_id', $user->id)->update(['leader_id' => null]);
+                $user->update(['team_id' => null]);
+            } else {
+                // Sincronizar relación de líder si es Team Líder
+                if ($user->role === 'team_leader') {
+                    // Desvincular este líder de cualquier otro equipo que pudiera tener asignado anteriormente
+                    Team::where('leader_id', $user->id)
+                        ->where('id', '!=', $request->team_id)
+                        ->update(['leader_id' => null]);
+
+                    if ($request->team_id) {
+                        $newTeam = Team::find($request->team_id);
+                        if ($newTeam) {
+                            // Si el equipo ya tenía otro líder, desvincular a ese líder anterior
+                            if ($newTeam->leader_id && $newTeam->leader_id != $user->id) {
+                                User::where('id', $newTeam->leader_id)->update(['team_id' => null]);
+                            }
+                            $newTeam->update(['leader_id' => $user->id]);
+                        }
+                    }
+                } else {
+                    // Si el rol ya no es team_leader (cambió a asesor o director), desvincular de cualquier equipo que liderara
+                    Team::where('leader_id', $user->id)->update(['leader_id' => null]);
+                }
+            }
+        });
 
         return redirect()->route('director.users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
@@ -128,7 +183,39 @@ class DirectorAdminController extends Controller
     // ==========================================
     public function kpisIndex()
     {
-        $kpis = KpiConfig::all();
+        $offices = Office::where('is_active', true)->get();
+
+        // Aseguramos que cada oficina activa tenga una configuración para 'captaciones'
+        foreach ($offices as $office) {
+            KpiConfig::firstOrCreate(
+                ['office_id' => $office->id, 'indicator' => 'captaciones'],
+                [
+                    'weekly_goal' => 10,
+                    'yellow_threshold_pct' => 51,
+                    'red_threshold_pct' => 50,
+                    'is_active' => true,
+                    'created_by' => auth()->id(),
+                ]
+            );
+        }
+
+        // Aseguramos que exista una configuración por defecto (global)
+        KpiConfig::firstOrCreate(
+            ['office_id' => null, 'indicator' => 'captaciones'],
+            [
+                'weekly_goal' => 10,
+                'yellow_threshold_pct' => 51,
+                'red_threshold_pct' => 50,
+                'is_active' => true,
+                'created_by' => auth()->id(),
+            ]
+        );
+
+        $kpis = KpiConfig::with('office')
+            ->where('indicator', 'captaciones')
+            ->orderByRaw('office_id IS NULL DESC')
+            ->get();
+
         return view('director.kpis.index', compact('kpis'));
     }
 
@@ -188,17 +275,19 @@ class DirectorAdminController extends Controller
             ],
         ]);
 
-        $team = Team::create([
-            'name' => $request->name,
-            'office_id' => $request->office_id,
-            'leader_id' => $request->leader_id,
-            'is_active' => true,
-        ]);
+        DB::transaction(function () use ($request) {
+            $team = Team::create([
+                'name' => $request->name,
+                'office_id' => $request->office_id,
+                'leader_id' => $request->leader_id,
+                'is_active' => true,
+            ]);
 
-        // Si se asignó un líder, actualizar su team_id para mantener la coherencia
-        if ($request->leader_id) {
-            User::where('id', $request->leader_id)->update(['team_id' => $team->id]);
-        }
+            // Si se asignó un líder, actualizar su team_id para mantener la coherencia
+            if ($request->leader_id) {
+                User::where('id', $request->leader_id)->update(['team_id' => $team->id]);
+            }
+        });
 
         return redirect()->route('director.teams.index')->with('success', 'Equipo creado exitosamente.');
     }
@@ -226,22 +315,32 @@ class DirectorAdminController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        // Desvincular el team anterior del líder anterior si cambió de líder
-        if ($team->leader_id && $team->leader_id != $request->leader_id) {
-            User::where('id', $team->leader_id)->update(['team_id' => null]);
-        }
+        $is_active = (bool) $request->is_active;
+        $leader_id = $is_active ? $request->leader_id : null;
 
-        $team->update([
-            'name' => $request->name,
-            'office_id' => $request->office_id,
-            'leader_id' => $request->leader_id,
-            'is_active' => $request->is_active,
-        ]);
+        DB::transaction(function () use ($request, $team, $leader_id, $is_active) {
+            // Desvincular el team anterior del líder anterior si cambió de líder o si el equipo se desactiva
+            if ($team->leader_id && ($team->leader_id != $leader_id || !$is_active)) {
+                User::where('id', $team->leader_id)->update(['team_id' => null]);
+            }
 
-        // Si se asignó un líder, actualizar su team_id
-        if ($request->leader_id) {
-            User::where('id', $request->leader_id)->update(['team_id' => $team->id]);
-        }
+            // Si se desactiva el equipo, liberar a todos los asesores y miembros vinculados a este equipo
+            if (!$is_active) {
+                User::where('team_id', $team->id)->update(['team_id' => null]);
+            }
+
+            $team->update([
+                'name' => $request->name,
+                'office_id' => $request->office_id,
+                'leader_id' => $leader_id,
+                'is_active' => $is_active,
+            ]);
+
+            // Si se asignó un líder y el equipo está activo, actualizar su team_id
+            if ($leader_id && $is_active) {
+                User::where('id', $leader_id)->update(['team_id' => $team->id]);
+            }
+        });
 
         return redirect()->route('director.teams.index')->with('success', 'Equipo actualizado exitosamente.');
     }

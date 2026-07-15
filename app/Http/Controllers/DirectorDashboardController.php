@@ -98,6 +98,42 @@ class DirectorDashboardController extends Controller
                 return $office;
             });
 
+        $teams = Team::where('is_active', true)
+            ->with(['members' => function ($q) {
+                $q->where('role', 'asesor')->where('is_active', true);
+            }, 'leader'])
+            ->get()
+            ->map(function ($team) use ($reportsByUser) {
+                $asesorIds = $team->members->pluck('id');
+                $teamVisits = 0;
+                $teamSign = 0;
+                $teamExclusive = 0;
+                $teamClosings = 0;
+                $teamCalls = 0;
+                $teamProperties = 0;
+
+                foreach ($asesorIds as $id) {
+                    $reports = $reportsByUser->get($id, collect());
+                    $teamVisits += $reports->sum('visits');
+                    $teamSign += $reports->sum('sign_captures');
+                    $teamExclusive += $reports->sum('exclusive_captures');
+                    $teamClosings += $reports->sum('closings');
+                    $teamCalls += $reports->sum('calls_made');
+                    $teamProperties += $reports->sum('properties_in_system');
+                }
+
+                $team->weekly = [
+                    'visits' => $teamVisits,
+                    'sign_captures' => $teamSign,
+                    'exclusive_captures' => $teamExclusive,
+                    'closings' => $teamClosings,
+                    'calls_made' => $teamCalls,
+                    'properties_in_system' => $teamProperties,
+                ];
+                $team->total_asesores = $asesorIds->count();
+                return $team;
+            });
+
         $asesoresList = User::where('role', 'asesor')
             ->where('is_active', true)
             ->with(['office', 'team'])
@@ -143,6 +179,7 @@ class DirectorDashboardController extends Controller
             'asesoresSinReporte' => $asesoresSinReporte,
             'weeklyGlobal' => $weeklyGlobal,
             'offices' => $offices,
+            'teams' => $teams,
             'rankings' => $rankings,
             'candidatosTeamLeader' => $candidatosTeamLeader,
         ];

@@ -45,8 +45,12 @@ class TeamLeaderDashboardController extends Controller
         // Asesores activos de mi equipo con sus reportes y estadísticas
         $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
 
-        // Configuración de semáforo
+        // Configuración de semáforo por oficina con fallback global
         $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('office_id', $user->office_id)
+            ->where('is_active', true)
+            ->first() ?? KpiConfig::where('indicator', 'captaciones')
+            ->whereNull('office_id')
             ->where('is_active', true)
             ->first();
 
@@ -137,8 +141,12 @@ class TeamLeaderDashboardController extends Controller
 
         $totalCaptures = $weeklyTotals['sign_captures'] + $weeklyTotals['exclusive_captures'];
 
-        // Semáforo
+        // Semáforo por oficina con fallback global
         $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('office_id', $asesor->office_id)
+            ->where('is_active', true)
+            ->first() ?? KpiConfig::where('indicator', 'captaciones')
+            ->whereNull('office_id')
             ->where('is_active', true)
             ->first();
 
@@ -476,6 +484,10 @@ class TeamLeaderDashboardController extends Controller
         $asesoresData = $this->getTeamAsesoresData($user, $today, $startOfWeek, $endOfWeek);
 
         $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('office_id', $user->office_id)
+            ->where('is_active', true)
+            ->first() ?? KpiConfig::where('indicator', 'captaciones')
+            ->whereNull('office_id')
             ->where('is_active', true)
             ->first();
 

@@ -42,8 +42,12 @@ class AsesorDashboardController extends Controller
 
         $totalCaptures = $weeklyTotals['sign_captures'] + $weeklyTotals['exclusive_captures'];
 
-        // Semáforo de captaciones
+        // Semáforo de captaciones por oficina con fallback global
         $kpiConfig = KpiConfig::where('indicator', 'captaciones')
+            ->where('office_id', $user->office_id)
+            ->where('is_active', true)
+            ->first() ?? KpiConfig::where('indicator', 'captaciones')
+            ->whereNull('office_id')
             ->where('is_active', true)
             ->first();
 

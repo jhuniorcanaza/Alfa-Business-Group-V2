@@ -127,7 +127,7 @@
                 <button onclick="closeCreateUserModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             
-            <form method="POST" action="{{ route('director.users.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('director.users.store') }}" onsubmit="return validateCreateUserForm(this);" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre Completo</label>
@@ -155,7 +155,7 @@
                 </div>
                 <div id="create_office_container">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Asignar Oficina</label>
-                    <select name="office_id" id="create_user_office" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                    <select name="office_id" id="create_user_office" onchange="filterTeams('create');" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                         <option value="">-- Sin Oficina --</option>
                         @foreach($offices as $office)
                             <option value="{{ $office->id }}">{{ $office->name }}</option>
@@ -164,10 +164,12 @@
                 </div>
                 <div id="create_team_container">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Asignar Equipo</label>
-                    <select name="team_id" id="create_user_team" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                    <select name="team_id" id="create_user_team" onchange="handleTeamChange('create');" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                         <option value="">-- Sin Equipo --</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}">{{ $team->name }} ({{ $team->office ? $team->office->name : 'N/A' }})</option>
+                            <option value="{{ $team->id }}" data-office="{{ $team->office_id }}" data-leader-id="{{ $team->leader_id }}" data-leader-name="{{ $team->leader ? $team->leader->name : '' }}">
+                                {{ $team->name }} ({{ $team->office ? $team->office->name : 'N/A' }}){{ $team->leader ? ' — [Líder: ' . $team->leader->name . '] ⚠️' : '' }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -193,7 +195,7 @@
                 <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             
-            <form id="editUserForm" method="POST" action="" class="space-y-4">
+            <form id="editUserForm" method="POST" action="" onsubmit="return validateEditUserForm(this);" class="space-y-4">
                 @csrf
                 @method('PUT')
                 
@@ -228,7 +230,7 @@
 
                 <div id="edit_office_container">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Asignar Oficina</label>
-                    <select name="office_id" id="edit_user_office" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                    <select name="office_id" id="edit_user_office" onchange="filterTeams('edit');" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                         <option value="">-- Sin Oficina --</option>
                         @foreach($offices as $office)
                             <option value="{{ $office->id }}">{{ $office->name }}</option>
@@ -238,10 +240,12 @@
 
                 <div id="edit_team_container">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Asignar Equipo</label>
-                    <select name="team_id" id="edit_user_team" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                    <select name="team_id" id="edit_user_team" onchange="handleTeamChange('edit');" class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
                         <option value="">-- Sin Equipo --</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}">{{ $team->name }} ({{ $team->office ? $team->office->name : 'N/A' }})</option>
+                            <option value="{{ $team->id }}" data-office="{{ $team->office_id }}" data-leader-id="{{ $team->leader_id }}" data-leader-name="{{ $team->leader ? $team->leader->name : '' }}">
+                                {{ $team->name }} ({{ $team->office ? $team->office->name : 'N/A' }}){{ $team->leader ? ' — [Líder: ' . $team->leader->name . '] ⚠️' : '' }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -266,6 +270,27 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN DE REASIGNACIÓN DE LÍDER (POP-UP) -->
+    <div id="confirmLeaderModal" class="fixed inset-0 z-[100] overflow-y-auto hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-700 p-6 text-center space-y-4">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                <span class="text-xl">⚠️</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Advertencia de Reasignación</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed" id="confirmLeaderMessage">
+                El equipo seleccionado ya tiene un líder asignado. ¿Deseas reemplazarlo?
+            </p>
+            <div class="pt-3 flex justify-center gap-3">
+                <button type="button" id="confirmLeaderCancelBtn" class="px-4 py-2 text-xs font-bold text-gray-600 dark:text-gray-400 bg-gray-100 hover:bg-gray-250 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+                <button type="button" id="confirmLeaderOkBtn" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-md shadow-amber-600/20 transition-colors">
+                    Sí, reemplazar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Función para ocultar de forma fluida y dinámica los campos de oficina y equipo para Directores
         function toggleModalFields(prefix) {
@@ -287,11 +312,60 @@
             }
         }
 
+        // Filtrar y sincronizar equipos/oficinas
+        function filterTeams(prefix) {
+            const officeSelect = document.getElementById(prefix === 'create' ? 'create_user_office' : 'edit_user_office');
+            const teamSelect = document.getElementById(prefix === 'create' ? 'create_user_team' : 'edit_user_team');
+            const selectedOfficeId = officeSelect.value;
+            const selectedTeamId = teamSelect.value;
+
+            let selectedOptionOfficeId = '';
+            const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                selectedOptionOfficeId = selectedOption.getAttribute('data-office');
+            }
+
+            Array.from(teamSelect.options).forEach(option => {
+                if (!option.value) {
+                    option.style.display = 'block'; // Mantener "-- Sin Equipo --" visible
+                    return;
+                }
+                const teamOfficeId = option.getAttribute('data-office');
+                if (!selectedOfficeId || teamOfficeId === selectedOfficeId) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            // Si el equipo seleccionado no pertenece a la oficina seleccionada, reiniciar selección de equipo
+            if (selectedOfficeId && selectedTeamId && selectedOptionOfficeId !== selectedOfficeId) {
+                teamSelect.value = '';
+            }
+        }
+
+        function handleTeamChange(prefix) {
+            const officeSelect = document.getElementById(prefix === 'create' ? 'create_user_office' : 'edit_user_office');
+            const teamSelect = document.getElementById(prefix === 'create' ? 'create_user_team' : 'edit_user_team');
+            const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+
+            if (selectedOption && selectedOption.value) {
+                const teamOfficeId = selectedOption.getAttribute('data-office');
+                if (teamOfficeId) {
+                    officeSelect.value = teamOfficeId;
+                    filterTeams(prefix);
+                }
+            }
+        }
+
         // Modal de Creación
         function openCreateUserModal() {
-            // Resetear por defecto a asesor
+            // Resetear por defecto
             document.getElementById('create_user_role').value = 'asesor';
+            document.getElementById('create_user_office').value = '';
+            document.getElementById('create_user_team').value = '';
             toggleModalFields('create');
+            filterTeams('create');
             document.getElementById('createUserModal').classList.remove('hidden');
             document.getElementById('createUserModal').classList.add('flex');
         }
@@ -300,8 +374,86 @@
             document.getElementById('createUserModal').classList.remove('flex');
         }
 
+        let editingUserId = null;
+        let pendingFormToSubmit = null;
+        let bypassConfirm = false;
+
+        function showLeaderConfirmModal(message, form) {
+            document.getElementById('confirmLeaderMessage').innerText = message;
+            pendingFormToSubmit = form;
+            
+            const modal = document.getElementById('confirmLeaderModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLeaderConfirmModal() {
+            const modal = document.getElementById('confirmLeaderModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            pendingFormToSubmit = null;
+        }
+
+        // Registrar eventos cuando se carga el DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirmLeaderCancelBtn').addEventListener('click', closeLeaderConfirmModal);
+            document.getElementById('confirmLeaderOkBtn').addEventListener('click', function() {
+                if (pendingFormToSubmit) {
+                    bypassConfirm = true;
+                    pendingFormToSubmit.submit();
+                }
+                closeLeaderConfirmModal();
+            });
+        });
+
+        function validateCreateUserForm(form) {
+            if (bypassConfirm) {
+                bypassConfirm = false;
+                return true;
+            }
+            
+            const role = form.querySelector('[name="role"]').value;
+            const teamSelect = form.querySelector('[name="team_id"]');
+            const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+
+            if (role === 'team_leader' && selectedOption && selectedOption.value) {
+                const leaderName = selectedOption.getAttribute('data-leader-name');
+                if (leaderName) {
+                    const msg = `⚠️ El equipo seleccionado ya tiene como líder a "${leaderName}". ¿Estás seguro de que deseas reasignar este equipo a este nuevo colaborador y desvincular al líder anterior?`;
+                    showLeaderConfirmModal(msg, form);
+                    return false; // Evitar el envío inmediato
+                }
+            }
+            return true;
+        }
+
+        function validateEditUserForm(form) {
+            if (bypassConfirm) {
+                bypassConfirm = false;
+                return true;
+            }
+            
+            const role = form.querySelector('[name="role"]').value;
+            const teamSelect = form.querySelector('[name="team_id"]');
+            const selectedOption = teamSelect.options[teamSelect.selectedIndex];
+
+            if (role === 'team_leader' && selectedOption && selectedOption.value) {
+                const leaderId = selectedOption.getAttribute('data-leader-id');
+                const leaderName = selectedOption.getAttribute('data-leader-name');
+                
+                // Solo advertir si el líder del equipo es otra persona diferente a la que editamos
+                if (leaderId && leaderName && String(leaderId) !== String(editingUserId)) {
+                    const msg = `⚠️ El equipo seleccionado ya tiene como líder a "${leaderName}". ¿Estás seguro de que deseas reasignar este equipo a este colaborador y desvincular al líder anterior?`;
+                    showLeaderConfirmModal(msg, form);
+                    return false; // Evitar el envío inmediato
+                }
+            }
+            return true;
+        }
+
         // Modal de Edición
         function openEditUserModal(id, name, email, role, phone, officeId, teamId, isActive) {
+            editingUserId = id;
             const form = document.getElementById('editUserForm');
             form.action = `/director/users/${id}`;
             
@@ -316,6 +468,7 @@
             
             // Evaluar los campos del rol de inmediato al abrir la edición
             toggleModalFields('edit');
+            filterTeams('edit');
             
             document.getElementById('editUserModal').classList.remove('hidden');
             document.getElementById('editUserModal').classList.add('flex');

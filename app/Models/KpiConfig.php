@@ -11,6 +11,7 @@ class KpiConfig extends Model
     use HasFactory;
 
     protected $fillable = [
+        'office_id',
         'indicator',
         'weekly_goal',
         'yellow_threshold_pct',
@@ -22,6 +23,7 @@ class KpiConfig extends Model
     protected function casts(): array
     {
         return [
+            'office_id' => 'integer',
             'weekly_goal' => 'integer',
             'yellow_threshold_pct' => 'integer',
             'red_threshold_pct' => 'integer',
@@ -30,6 +32,14 @@ class KpiConfig extends Model
     }
 
     // ─── Relaciones ─────────────────────────────────────────
+
+    /**
+     * Oficina a la que pertenece esta configuración de KPI.
+     */
+    public function office(): BelongsTo
+    {
+        return $this->belongsTo(Office::class, 'office_id');
+    }
 
     /**
      * Director que configuró este KPI.
@@ -54,10 +64,12 @@ class KpiConfig extends Model
 
         if ($percentage >= 100) {
             return 'green';
-        } elseif ($percentage >= $this->yellow_threshold_pct) {
-            return 'yellow';
         }
 
-        return 'red';
+        if ($percentage <= $this->red_threshold_pct) {
+            return 'red';
+        }
+
+        return 'yellow';
     }
 }
